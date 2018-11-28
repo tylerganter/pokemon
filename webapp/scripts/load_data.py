@@ -7,4 +7,5 @@ filepath = '../tables/gen_{:d}.hdf5'.format(gen)
 with pd.HDFStore(filepath, mode='r') as store:
     poke_dex = store['poke_dex']
 
-print(poke_dex.head())
+# print(poke_dex.head())
+print(poke_dex)
