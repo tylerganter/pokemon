@@ -204,8 +204,11 @@ def get_poke_dex(gen=1):
     filepath = os.path.join(project_path,
                             'webapp/tables/gen_{:d}.hdf5'.format(gen))
 
-    with pd.HDFStore(filepath, mode='w') as store:
+    with pd.HDFStore(filepath, mode='a') as store:
         store['poke_dex'] = pd.DataFrame(poke_dex, columns=col_names)
+
+def row_to_move_info(row_soup, soup_col_names):
+    return [0], ['a']
 
 def get_attack_dex(gen=1):
     """
@@ -237,7 +240,53 @@ def get_attack_dex(gen=1):
         else:
             raise AttributeError('invalid poketype: %s for GenIII' % poketype)
 
-    pass
+    gen = int(gen)
+    assert gen >= 1 and gen <= 7
+
+    # TODO get the correct url
+    # url = "https://pokemondb.net/pokedex/all"
+    url = "https://pokemondb.net/pokedex/stats/gen{}".format(gen)
+
+    # # pull the webpage
+    # try:
+    #     response = requests.get(url)
+    # except (requests.exceptions.MissingSchema,
+    #         requests.exceptions.ConnectionError) as err:
+    #     raise(err)
+    #
+    # # parse
+    # soup = BeautifulSoup(response.text, features='lxml')
+
+    # TODO TEMPORARY! replace this
+    temp_filepath = '/Users/Tyler/Desktop/POKEMON/gen1_moves.html'
+    f = open(temp_filepath)
+    soup = BeautifulSoup(f.read(), features='lxml')
+
+    attackdex_soup = soup.find('table', attrs={"id": "moves"})
+
+    soup_col_names = []
+    for row_soup in attackdex_soup.thead.tr.find_all('th', recursive=False):
+        soup_col_names.append(row_soup.div.contents[0])
+
+    attack_dex = None
+
+    for row_number, row_soup in \
+            enumerate(attackdex_soup.tbody.find_all('tr', recursive=False)):
+        move, col_names = row_to_move_info(row_soup, soup_col_names)
+
+        move = np.array([move])
+
+        if attack_dex is None:
+            attack_dex = move
+        else:
+            attack_dex = np.append(attack_dex, move, axis=0)
+
+    project_path = os.path.split(os.path.abspath(os.path.dirname(__file__)))[0]
+    filepath = os.path.join(project_path,
+                            'webapp/tables/gen_{:d}.hdf5'.format(gen))
+
+    with pd.HDFStore(filepath, mode='a') as store:
+        store['attack_dex'] = pd.DataFrame(attack_dex, columns=col_names)
 
 def get_poke_attack_junction(gen=1):
     """
@@ -252,3 +301,4 @@ if __name__ == '__main__':
     # "https://pokemondb.net/pokedex/stats/gen1"
 
     get_poke_dex(gen=3)
+    get_attack_dex(gen=3)
