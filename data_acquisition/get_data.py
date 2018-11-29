@@ -1,18 +1,23 @@
 """
 
+simple:
+    poketypes (list of strings)
+
+Tables:
+    poketype_chart
+    poke_dex
+    attack_dex
+    poke_attack_junction
 """
 
 from __future__ import division, print_function
 # from __future__ import absolute_import #TODO why doesn't pycharm like this?
 
 import os
-from bs4 import BeautifulSoup
 import numpy as np
 import pandas as pd
 
 from utils import *
-
-# __gen__ = 1
 
 def _check_gen():
     global __gen__
@@ -64,14 +69,33 @@ def get_move_categories():
     return ['physical', 'special', 'status']
 
 def get_poketype_chart():
+    def get_chart_soup():
+        if __gen__ < 6:
+            url = 'https://pokemondb.net/type/old'
+
+            soup = url_to_soup(url)
+
+            chart_soup = soup.find_all('table', attrs={"class": "type-table"})
+
+            if __gen__ == 1:
+                chart_soup = chart_soup[1]
+            else:
+                chart_soup = chart_soup[0]
+
+        else:
+            url = 'https://pokemondb.net/type'
+
+            soup = url_to_soup(url)
+
+            chart_soup = soup.find('table', attrs={"class": "type-table"})
+
+        return chart_soup
+
     _check_gen()
 
-    # for gen 6-7
-    url = 'https://bulbapedia.bulbagarden.net/wiki/Type'
-    # for gen 1 and gen 2-5
-    url = 'https://bulbapedia.bulbagarden.net/wiki/Type/Type_chart'
+    chart_soup = get_chart_soup()
 
-    return []
+    print(chart_soup.prettify())
 
 def get_poke_dex():
     """
@@ -436,7 +460,6 @@ def get_attack_dex(gen=1):
     write_to_store(attack_dex=attack_dex,
                    col_names=col_names)
 
-
 def get_poke_attack_junction(gen=1):
     """
     attack <-> pokemon
@@ -449,7 +472,9 @@ def get_poke_attack_junction(gen=1):
 if __name__ == '__main__':
     # "https://pokemondb.net/pokedex/stats/gen1"
 
-    __gen__ = 7
+    __gen__ = 1
 
-    get_poke_dex()
-    get_attack_dex()
+    get_poketype_chart()
+
+    # get_poke_dex()
+    # get_attack_dex()
