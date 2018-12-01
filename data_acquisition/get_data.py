@@ -502,12 +502,17 @@ def get_attack_dex(gen=1):
         soup_col_names = get_col_names(attackdex_soup)
         soup_rows = get_soup_rows(attackdex_soup)
 
+        col_names = None
+
         for row_number, row_soup in enumerate(soup_rows):
-            move, col_names = row_to_move_info(row_soup, soup_col_names)
+            move, temp_col_names = row_to_move_info(row_soup, soup_col_names)
 
             if move is None:
                 # skip any problem moves
                 continue
+
+            if col_names is None:
+                col_names = temp_col_names
 
             if row_number % 20 == 0:
                 print('Processing: Gen{} - {}'.format(CURRENT_GEN, move[0]))
@@ -529,9 +534,9 @@ def get_poke_attack_junction(gen=1):
 if __name__ == '__main__':
     # "https://pokemondb.net/pokedex/stats/gen1"
 
-    __gen__ = 7
+    # __gen__ = 7
 
-    get_poketype_chart()
-
-    # get_poke_dex()
-    # get_attack_dex()
+    for __gen__ in range(1, 8):
+        # get_poketype_chart()
+        # get_poke_dex()
+        get_attack_dex()
