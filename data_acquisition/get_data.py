@@ -91,11 +91,68 @@ def get_poketype_chart():
 
         return chart_soup
 
+    def get_defense_poketypes(chart_soup):
+        poketypes = chart_soup.thead.tr.find_all('th', recursive=False)
+
+        poketypes.pop(0)
+
+        poketypes = [str(poketype.a['title']).lower() for poketype in poketypes]
+
+        for i, poketype in enumerate(poketypes):
+            assert poketype == get_poketypes()[i]
+
+        if __gen__ == 1:
+            poketypes = poketypes[:15]
+        elif __gen__ < 6:
+            poketypes = poketypes[:17]
+
+        return poketypes
+
+    def fill_chart(chart_soup, poketypes):
+        poketype_chart = np.ones((len(poketypes), len(poketypes)))
+
+        chart_rows_soup = chart_soup.tbody.find_all('tr', recursive=False)
+        chart_rows_soup = chart_rows_soup[:len(poketypes)]
+
+        for i, row_soup in enumerate(chart_rows_soup):
+            attack_poketype = str(row_soup.th.a.contents[0]).lower()
+
+            assert attack_poketype == poketypes[i]
+
+            cells_soup = row_soup.find_all('td', recursive=False)
+
+            for j, cell_soup in enumerate(cells_soup):
+                if len(cell_soup.contents) > 0:
+                    effectiveness = str(cell_soup.contents[0])
+
+                    if effectiveness == '0':
+                        poketype_chart[i, j] = 0
+                    elif effectiveness == '½':
+                        poketype_chart[i, j] = 0.5
+                    elif effectiveness == '2':
+                        poketype_chart[i, j] = 2
+
+        return poketype_chart
+
+    def write_to_store(poketype_chart, col_names):
+        project_path = \
+            os.path.split(os.path.abspath(os.path.dirname(__file__)))[0]
+        filepath = os.path.join(project_path,
+                                'webapp/tables/gen_{:d}.hdf5'.format(__gen__))
+
+        with pd.HDFStore(filepath, mode='a') as store:
+            store['poketype_chart'] = \
+                pd.DataFrame(poketype_chart, columns=poketypes)
+
     _check_gen()
 
     chart_soup = get_chart_soup()
 
-    print(chart_soup.prettify())
+    poketypes = get_defense_poketypes(chart_soup)
+
+    poketype_chart = fill_chart(chart_soup, poketypes)
+
+    write_to_store(poketype_chart, poketypes)
 
 def get_poke_dex():
     """
@@ -472,7 +529,7 @@ def get_poke_attack_junction(gen=1):
 if __name__ == '__main__':
     # "https://pokemondb.net/pokedex/stats/gen1"
 
-    __gen__ = 1
+    __gen__ = 7
 
     get_poketype_chart()
 
