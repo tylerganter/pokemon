@@ -16,6 +16,7 @@ from __future__ import division, print_function
 import os
 import numpy as np
 import pandas as pd
+import re
 
 from utils import *
 
@@ -538,7 +539,20 @@ def get_poke_attack_junction():
 
     """
     def get_moves_tables_soup(pokemon):
-        url = url_template.format(pokemon['name'])
+        pokemon_name = pokemon['name']
+
+        if pokemon_name[-1] == '♀':
+            pokemon_name = pokemon_name[:-1] + '-f'
+        elif pokemon_name[-1] == '♂':
+            pokemon_name = pokemon_name[:-1] + '-m'
+        elif pokemon_name == 'Mr. Mime':
+            pokemon_name = 'mr-mime'
+        elif pokemon_name == 'Ho-oh':
+            pokemon_name = 'ho-oh'
+        else:
+            pokemon_name = re.sub(r'\W+', '', pokemon_name)
+
+        url = url_template.format(pokemon_name)
         soup = url_to_soup(url)
         tables_soup = soup.find_all('table', attrs={"class": "data-table"})
 
@@ -569,6 +583,8 @@ def get_poke_attack_junction():
                 move_name = str(name_cell.a.contents[0])
 
                 learn_set.add(move_name)
+
+        assert len(learn_set) > 0
 
         return learn_set
 

@@ -29,15 +29,30 @@ BEST POKEMON:
 best average damage given and taken
 """
 
-# TODO
-# global __gen__
-__gen__ = 1
+from __future__ import division
 
-def from_poketype_chart(attack_poketype, defending_poketypes):
-    #TODO
-    return 1
+def from_poketype_chart(poketype_chart, attack_poketype, defending_pokemon):
+    # TODO find a better solution for this...
+    # and also make a solution for gen 1 (dark and steel)
+    if defending_pokemon['poketype1'] == 'fairy':
+        defending_pokemon['poketype1'] = 'normal'
+    if defending_pokemon['poketype2'] == 'fairy':
+        defending_pokemon['poketype2'] = ''
 
-def effective_damage(attack, attacking_pokemon=None, defending_pokemon=None):
+    attack_row_index = list(poketype_chart.columns).index(attack_poketype)
+
+    attack_row = poketype_chart.iloc[attack_row_index]
+
+    effectiveness = float(attack_row[defending_pokemon['poketype1']])
+
+    if len(defending_pokemon['poketype2']) > 0:
+        effectiveness = effectiveness \
+                        * float(attack_row[defending_pokemon['poketype2']])
+
+    return effectiveness
+
+def effective_damage(__gen__, attack, poketype_chart,
+                     attacking_pokemon=None, defending_pokemon=None):
     """
 
     :param attack: PokeAttack object
@@ -50,32 +65,42 @@ def effective_damage(attack, attacking_pokemon=None, defending_pokemon=None):
 
     level = 100
 
-    power = attack.power
-    critical_prob = attack.critical_prob
-    accuracy = attack.accuracy
-    num_turns = attack.num_turns
+    power = float(attack['power'])
+    accuracy = float(attack['accuracy'])
+    repeat = float(attack['repeat'])
+    turns_used = float(attack['turns_used'])
+
+    critical_prob = 0
+    # critical_prob = attack.critical_prob  # TODO use this?
 
     if attacking_pokemon is not None:
         # choose attack or special attack stat
-        if attack.is_special:
-            attack_stat = attacking_pokemon.sp_attack
+        if attack['category'] == 'physical':
+            attack_stat = float(attacking_pokemon['STAT_attack'])
+        elif attack['category'] == 'special':
+            attack_stat = float(attacking_pokemon['STAT_sp_attack'])
         else:
-            attack_stat = attacking_pokemon.attack
+            raise AttributeError
 
-        STAB = attack.poketype in attacking_pokemon.poketypes
+        STAB = attack['poketype'] in [attacking_pokemon['poketype1'],
+                                      attacking_pokemon['poketype2']]
     else:
         # defaults
         attack_stat = 100
         STAB = False
 
     if defending_pokemon is not None:
-        if attack.is_special:
-            defense_stat = defending_pokemon.sp_defense
+        if attack['category'] == 'physical':
+            defense_stat = float(defending_pokemon['STAT_defense'])
+        elif attack['category'] == 'special':
+            defense_stat = float(defending_pokemon['STAT_sp_defense'])
         else:
-            defense_stat = defending_pokemon.defense
+            raise AttributeError
 
-        poketype_effectiveness = \
-            from_poketype_chart(attack.poketype, defending_pokemon.poketypes)
+        poketype_effectiveness = from_poketype_chart(poketype_chart,
+                                                     attack['poketype'],
+                                                     defending_pokemon)
+
     else:
         # defaults
         defense_stat = 100
@@ -99,9 +124,7 @@ def effective_damage(attack, attacking_pokemon=None, defending_pokemon=None):
     # apply type effectiveness
     damage = damage * poketype_effectiveness
 
-    # apply accuracy and number of turns
-    damage = damage * accuracy / num_turns
-
-    # TODO factor in HP?
+    # apply accuracy and repeat and number of turns used
+    damage = damage * (accuracy / 100) * repeat / turns_used
 
     return damage
