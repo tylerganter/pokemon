@@ -19,6 +19,8 @@ import pandas as pd
 
 from utils import *
 
+# TODO get attack_dex TOTAL and SPEED
+
 def _check_gen():
     global __gen__
 
@@ -305,7 +307,7 @@ def get_poke_dex():
     write_to_store(poke_dex=poke_dex,
                    col_names=col_names)
 
-def get_attack_dex(gen=1):
+def get_attack_dex():
     """
     key
     name
@@ -522,21 +524,112 @@ def get_attack_dex(gen=1):
     write_to_store(attack_dex=attack_dex,
                    col_names=col_names)
 
-def get_poke_attack_junction(gen=1):
+def get_poke_attack_junction():
     """
     attack <-> pokemon
 
-    :param gen:
-    :return:
+    Creates a new DataFrame to be stored in the HDF5 store
+
+    the columns are pokemon and col_name = pokemon name
+        note: pokemon names are not necessarily 1-to-1 with the poke_dex
+
+    each row is a move in the attack_dex
+        the rows are 1-to-1 with the attack_dex
+
     """
-    pass
+    def get_moves_tables_soup(pokemon):
+        url = url_template.format(pokemon['name'])
+        soup = url_to_soup(url)
+        tables_soup = soup.find_all('table', attrs={"class": "data-table"})
+
+        return tables_soup
+
+    def get_learn_set(pokemon):
+        """the set of moves this pokemon can learn"""
+        learn_set = set()
+
+        moves_tables_soup = get_moves_tables_soup(pokemon)
+
+        # for each list of moves
+        for moves_table_soup in moves_tables_soup:
+            thead_cells = \
+                moves_table_soup.thead.tr.find_all('th', recursive=False)
+
+            col_names = [str(cell.div.contents[0]) for cell in thead_cells]
+            if 'Move' not in col_names:
+                # this is not a moves list (shouldn't happen)
+                continue
+
+            # name of each move in the table
+            name_cells = moves_table_soup.find_all('td',
+                                                   attrs={"class": "cell-name"})
+
+            # for each move
+            for name_cell in name_cells:
+                move_name = str(name_cell.a.contents[0])
+
+                learn_set.add(move_name)
+
+        return learn_set
+
+    def write_to_store(pa_junction, col_names):
+        project_path = \
+            os.path.split(os.path.abspath(os.path.dirname(__file__)))[0]
+        filepath = os.path.join(project_path,
+                                'webapp/tables/gen_{:d}.hdf5'.format(__gen__))
+
+        with pd.HDFStore(filepath, mode='a') as store:
+            store['pa_junction'] = pd.DataFrame(pa_junction, columns=col_names)
+
+    _check_gen()
+
+    if __gen__ == 7:
+        raise NotImplementedError
+    else:
+        url_template = 'https://pokemondb.net/pokedex/{}/moves/%d' % __gen__
+
+    filepath = '../webapp/tables/gen_{:d}.hdf5'.format(__gen__)
+
+    with pd.HDFStore(filepath, mode='r') as store:
+        # poketype_chart = store['poketype_chart']
+        poke_dex = store['poke_dex']
+        attack_dex = store['attack_dex']
+
+    # pokemon<->attack junction table
+    pa_col_names = []
+    pa_junction = np.zeros((attack_dex.shape[0], 0), dtype=bool)
+
+    processed = {}
+
+    # for each pokemon
+    for index, pokemon in poke_dex.iterrows():
+        if pokemon['name'] in processed:
+            continue
+        else:
+            print('processing: %3d/%3d - %s' % (index, poke_dex.shape[0],
+                                                pokemon['name']))
+            processed[pokemon['name']] = None
+
+        learn_set = get_learn_set(pokemon)
+
+        # update the junction table
+        pa_col_names.append(pokemon['name'])
+        temp = np.expand_dims(attack_dex['name'].isin(learn_set), axis=1)
+        pa_junction = np.hstack((pa_junction, temp))
+
+        # if index > 10:
+        #     break
+
+    write_to_store(pa_junction, col_names=pa_col_names)
+
+
+
 
 if __name__ == '__main__':
-    # "https://pokemondb.net/pokedex/stats/gen1"
+    __gen__ = 3
+    get_poke_attack_junction()
 
-    # __gen__ = 7
-
-    for __gen__ in range(1, 8):
+    # for __gen__ in range(1, 8):
         # get_poketype_chart()
         # get_poke_dex()
-        get_attack_dex()
+        # get_attack_dex()

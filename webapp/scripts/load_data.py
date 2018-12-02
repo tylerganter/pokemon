@@ -7,20 +7,21 @@ def load_data(gen):
         poketype_chart = store['poketype_chart']
         poke_dex = store['poke_dex']
         attack_dex = store['attack_dex']
+        pa_junction = store['pa_junction']
 
-    return poketype_chart, poke_dex, attack_dex
+    return poketype_chart, poke_dex, attack_dex, pa_junction
 
 if __name__ == '__main__':
-    __gen__ = 1
+    __gen__ = 3
 
-    poketype_chart, poke_dex, attack_dex = load_data(__gen__)
+    poketype_chart, poke_dex, attack_dex, pa_junction = load_data(__gen__)
 
     print(poketype_chart)
 
     print(poke_dex.head())
     print(poke_dex.tail())
-    # print(poke_dex)
 
     print(attack_dex.head())
     print(attack_dex.tail())
-    # print(attack_dex)
+
+    print(pa_junction.head())
