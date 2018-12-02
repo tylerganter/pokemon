@@ -547,8 +547,10 @@ def get_poke_attack_junction():
             pokemon_name = pokemon_name[:-1] + '-m'
         elif pokemon_name == 'Mr. Mime':
             pokemon_name = 'mr-mime'
-        elif pokemon_name == 'Ho-oh':
-            pokemon_name = 'ho-oh'
+        elif pokemon_name == 'Mime Jr.':
+            pokemon_name = 'mime-jr'
+        elif pokemon_name in ['Ho-oh', 'Porygon-Z']:
+            pass
         else:
             pokemon_name = re.sub(r'\W+', '', pokemon_name)
 
@@ -642,10 +644,12 @@ def get_poke_attack_junction():
 
 
 if __name__ == '__main__':
-    __gen__ = 3
-    get_poke_attack_junction()
+    __gen__ = 4
+    # get_poke_attack_junction()
 
     # for __gen__ in range(1, 8):
+    for __gen__ in range(5, 7):
         # get_poketype_chart()
         # get_poke_dex()
         # get_attack_dex()
+        get_poke_attack_junction()

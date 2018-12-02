@@ -2,6 +2,11 @@
 
 """
 
+# TODO get gen 1 working (dark and steel types), i.e. get the correct types for pokemon
+# TODO get gen 7 junction working
+# TODO try different weight functions
+# TODO Clear some attacks: future sight, outrage, focus punch
+
 from __future__ import division, print_function
 # from __future__ import absolute_import #TODO why doesn't pycharm like this?
 
@@ -88,6 +93,19 @@ def _single_pokemon_pokemon(attacking_pokemon_row, store_data):
 
     attacking_pokemon = poke_dex.iloc[attacking_pokemon_row]
 
+    """exceptions..."""
+
+    if attacking_pokemon['name'] in ['Ditto',
+                                     'Wobbuffet',
+                                     'Smeargle',
+                                     'Wynaut']:
+        best_combo = {
+            'score': 0,
+            'move_poketypes': [''] * 4,
+            'move_names': [''] * 4
+        }
+        return best_combo
+
     """Strongest attack if each poketype"""
 
     def get_best_move_per_poketype(pokemon,
@@ -149,8 +167,6 @@ def _single_pokemon_pokemon(attacking_pokemon_row, store_data):
         # acquire the subset for this combo of attack types
         combo_matrix = damage_matrix[combo, :]
 
-        print(combo_matrix.shape)
-
         # select the max (best) for each attack/defense pair
         max_combo_matrix = np.max(combo_matrix, axis=0)
 
@@ -168,7 +184,7 @@ def _single_pokemon_pokemon(attacking_pokemon_row, store_data):
             best_combo = {
                 'score': score,
                 'move_poketypes': move_poketypes + [''] * num_extra,
-                'move_names': move_names + [''] * num_extra,
+                'move_names': move_names + [''] * num_extra
             }
 
     return best_combo
@@ -179,11 +195,12 @@ def pokemon_pokemon(overwrite=False):
       4 Attacks & Pokemon, Pokemon
     """
     project_path = os.path.split(os.path.abspath(os.path.dirname(__file__)))[0]
-    filepath = 'results/gen_{:d}_simle.hdf5'.format(__gen__)
+    filepath = 'results/gen_{:d}_simple.hdf5'.format(__gen__)
     filepath = os.path.join(project_path, filepath)
 
-    if overwrite:
+    if overwrite or not os.path.exists(filepath):
         results = []
+        num_processed = 0
     else:
         with pd.HDFStore(filepath, mode='r') as store:
             stored_result = store['result']
@@ -200,8 +217,8 @@ def pokemon_pokemon(overwrite=False):
     for index, pokemon in poke_dex.iterrows():
         # if index < 13:
         #     continue
-        if index > 100:
-            break
+        # if index > 300:
+        #     break
 
         if not overwrite and index < num_processed:
             continue
@@ -216,10 +233,6 @@ def pokemon_pokemon(overwrite=False):
                      + [best_combo['score']]
 
         results.append(cur_result)
-
-        # TODO
-        import sys
-        sys.exit()
 
         with pd.HDFStore(filepath, mode='a') as store:
             store['result'] = pd.DataFrame(results, columns=col_names)
@@ -243,6 +256,11 @@ if __name__ == '__main__':
 
     # result.sort_values(by=['score'], ascending=False)
     # print(result.head())
+
+    result = result[result['sub_name'] == '']
+    result = result.reset_index(drop=True)
+
+    # result = result.iloc[:151]
 
     result = result.sort_values(by=['score'])
     print(result)
