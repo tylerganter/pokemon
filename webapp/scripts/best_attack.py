@@ -2,10 +2,14 @@
 
 """
 
+# TODO exhaustively make everything correct for the GEN...
+# TODO          use "changes" per pokemon page
 # TODO get gen 1 working (dark and steel types), i.e. get the correct types for pokemon
 # TODO get gen 7 junction working
 # TODO try different weight functions
 # TODO Clear some attacks: future sight, outrage, focus punch
+# TODO make the different weight functions store to different files
+# TODO factor in
 
 from __future__ import division, print_function
 # from __future__ import absolute_import #TODO why doesn't pycharm like this?
@@ -150,7 +154,15 @@ def _single_pokemon_pokemon(attacking_pokemon_row, store_data):
                                       attacking_pokemon=attacking_pokemon,
                                       defending_pokemon=defending_pokemon)
 
-            damage = damage / (float(defending_pokemon['STAT_hp']) / 100)
+            # damage = damage / (float(defending_pokemon['STAT_hp']) / 100)
+
+            damage = damage * np.sum([float(defending_pokemon[key])
+                                      for key in ('STAT_hp',
+                                                  'STAT_attack',
+                                                  'STAT_defense',
+                                                  'STAT_sp_attack',
+                                                  'STAT_sp_defense')]) / 500
+
 
             damage_matrix[row, col] = damage
 
@@ -195,7 +207,8 @@ def pokemon_pokemon(overwrite=False):
       4 Attacks & Pokemon, Pokemon
     """
     project_path = os.path.split(os.path.abspath(os.path.dirname(__file__)))[0]
-    filepath = 'results/gen_{:d}_simple.hdf5'.format(__gen__)
+    # filepath = 'results/gen_{:d}_simple.hdf5'.format(__gen__)
+    filepath = 'results/gen_{:d}_2.hdf5'.format(__gen__)
     filepath = os.path.join(project_path, filepath)
 
     if overwrite or not os.path.exists(filepath):
@@ -217,7 +230,7 @@ def pokemon_pokemon(overwrite=False):
     for index, pokemon in poke_dex.iterrows():
         # if index < 13:
         #     continue
-        # if index > 300:
+        # if index > 100:
         #     break
 
         if not overwrite and index < num_processed:
