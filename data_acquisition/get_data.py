@@ -20,8 +20,6 @@ import re
 
 from utils import *
 
-# TODO get attack_dex TOTAL and SPEED
-
 def _check_gen():
     global __gen__
 
@@ -141,7 +139,7 @@ def get_poketype_chart():
         project_path = \
             os.path.split(os.path.abspath(os.path.dirname(__file__)))[0]
         filepath = os.path.join(project_path,
-                                'webapp/tables/gen_{:d}.hdf5'.format(__gen__))
+                                'webapp/data/gen_{:d}.hdf5'.format(__gen__))
 
         with pd.HDFStore(filepath, mode='a') as store:
             store['poketype_chart'] = \
@@ -156,6 +154,8 @@ def get_poketype_chart():
     poketype_chart = fill_chart(chart_soup, poketypes)
 
     write_to_store(poketype_chart, poketypes)
+
+# TODO
 
 def get_poke_dex():
     """
@@ -245,17 +245,20 @@ def get_poke_dex():
                 pokemon.append(poketype2)
                 col_names.append('poketype2')
 
-            elif col_name in ['HP', 'Attack', 'Defense', 'Sp. Atk', 'Sp. Def']:
+            elif col_name in ['Total', 'HP', 'Attack', 'Defense', 'Sp. Atk',
+                              'Sp. Def', 'Speed']:
                 val = str(cell_soup.contents[0])
 
-                assert int(val) > 0 and int(val) < 300
+                assert int(val) > 0 and int(val) < 1000
                 pokemon.append(val)
                 stat_map = {
+                    'Total': 'STAT_total',
                     'HP': 'STAT_hp',
                     'Attack': 'STAT_attack',
                     'Defense': 'STAT_defense',
                     'Sp. Atk': 'STAT_sp_attack',
-                    'Sp. Def': 'STAT_sp_defense'
+                    'Sp. Def': 'STAT_sp_defense',
+                    'Speed': 'STAT_speed'
                 }
                 col_names.append(stat_map[col_name])
 
@@ -268,7 +271,7 @@ def get_poke_dex():
         project_path = \
             os.path.split(os.path.abspath(os.path.dirname(__file__)))[0]
         filepath = os.path.join(project_path,
-                                'webapp/tables/gen_{:d}.hdf5'.format(__gen__))
+                                'webapp/data/gen_{:d}.hdf5'.format(__gen__))
 
         with pd.HDFStore(filepath, mode='a') as store:
             store['poke_dex'] = pd.DataFrame(poke_dex, columns=col_names)
@@ -310,14 +313,6 @@ def get_poke_dex():
 
 def get_attack_dex():
     """
-    key
-    name
-    poketype
-    power
-    accuracy
-    number_of_turns
-    critical_prob
-    is_special (if gen3 use the function)
 
     :param gen:
     :return:
@@ -391,7 +386,15 @@ def get_attack_dex():
                     if cell_soup.span is None:
                         return None, None
 
-                    category = str(cell_soup.span['title']).lower()
+                    if __gen__ <= 3:
+                        # before gen 4, physical/special was determined
+                        # by poketype
+                        poketype = move[col_names.index('poketype')]
+
+                        category = 'special' \
+                            if is_special(poketype) else 'physical'
+                    else:
+                        category = str(cell_soup.span['title']).lower()
 
                     assert category in get_move_categories()
                     move.append(category)
@@ -487,7 +490,7 @@ def get_attack_dex():
         project_path = \
             os.path.split(os.path.abspath(os.path.dirname(__file__)))[0]
         filepath = os.path.join(project_path,
-                                'webapp/tables/gen_{:d}.hdf5'.format(__gen__))
+                                'webapp/data/gen_{:d}.hdf5'.format(__gen__))
 
         with pd.HDFStore(filepath, mode='a') as store:
             store['attack_dex'] = pd.DataFrame(attack_dex, columns=col_names)
@@ -594,7 +597,7 @@ def get_poke_attack_junction():
         project_path = \
             os.path.split(os.path.abspath(os.path.dirname(__file__)))[0]
         filepath = os.path.join(project_path,
-                                'webapp/tables/gen_{:d}.hdf5'.format(__gen__))
+                                'webapp/data/gen_{:d}.hdf5'.format(__gen__))
 
         with pd.HDFStore(filepath, mode='a') as store:
             store['pa_junction'] = pd.DataFrame(pa_junction, columns=col_names)
@@ -606,7 +609,7 @@ def get_poke_attack_junction():
     else:
         url_template = 'https://pokemondb.net/pokedex/{}/moves/%d' % __gen__
 
-    filepath = '../webapp/tables/gen_{:d}.hdf5'.format(__gen__)
+    filepath = '../webapp/data/gen_{:d}.hdf5'.format(__gen__)
 
     with pd.HDFStore(filepath, mode='r') as store:
         # poketype_chart = store['poketype_chart']
@@ -641,15 +644,16 @@ def get_poke_attack_junction():
     write_to_store(pa_junction, col_names=pa_col_names)
 
 
-
-
 if __name__ == '__main__':
-    __gen__ = 4
+    __gen__ = 1
+    get_poke_dex()
+    get_attack_dex()
+
     # get_poke_attack_junction()
 
-    # for __gen__ in range(1, 8):
-    for __gen__ in range(5, 7):
-        # get_poketype_chart()
-        # get_poke_dex()
-        # get_attack_dex()
-        get_poke_attack_junction()
+    # # for __gen__ in range(1, 8):
+    # for __gen__ in range(5, 7):
+    #     # get_poketype_chart()
+    #     # get_poke_dex()
+    #     # get_attack_dex()
+    #     get_poke_attack_junction()

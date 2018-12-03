@@ -1,18 +1,28 @@
 import pandas as pd
 
 def load_data(gen):
-    filepath = '../tables/gen_{:d}.hdf5'.format(gen)
+    filepath = '../data/gen_{:d}.hdf5'.format(gen)
 
     with pd.HDFStore(filepath, mode='r') as store:
         poketype_chart = store['poketype_chart']
         poke_dex = store['poke_dex']
+
+        temp = poke_dex[poke_dex['sub_name'] != '']['sub_name'].values
+
+        for val in temp:
+            if not val.startswith('Mega') and not val.startswith('Alolan')\
+                    and ('Form' not in val):
+                print(val)
+        import sys
+        sys.exit()
+
         attack_dex = store['attack_dex']
         pa_junction = store['pa_junction']
 
     return poketype_chart, poke_dex, attack_dex, pa_junction
 
 if __name__ == '__main__':
-    __gen__ = 3
+    __gen__ = 7
 
     poketype_chart, poke_dex, attack_dex, pa_junction = load_data(__gen__)
 

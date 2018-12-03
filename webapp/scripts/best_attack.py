@@ -2,14 +2,22 @@
 
 """
 
-# TODO exhaustively make everything correct for the GEN...
-# TODO          use "changes" per pokemon page
-# TODO get gen 1 working (dark and steel types), i.e. get the correct types for pokemon
+# TODO make the url map for pokemon something general
+# TODO get TOTAL and SPEED stats
+
 # TODO get gen 7 junction working
-# TODO try different weight functions
+# TODO exhaustively make everything correct for the GEN...
+#       get poketype for pokemon from: https://pokemondb.net/pokedex/game/red-blue-yellow
+#       acquiring move junction requires considering Alolan or not
+
 # TODO Clear some attacks: future sight, outrage, focus punch
+# TODO add "exceptions" to the same general file
+
 # TODO make the different weight functions store to different files
-# TODO factor in
+# TODO try different weight functions
+# TODO externalize the weight functions
+
+# TODO          use "changes" per pokemon page
 
 from __future__ import division, print_function
 # from __future__ import absolute_import #TODO why doesn't pycharm like this?
@@ -22,6 +30,7 @@ from itertools import combinations
 from load_data import load_data
 from formulas import effective_damage
 
+# TODO move this to another file
 def sorted_moves_per_poketype():
     """
     compute the effective power of each move and then split by poketype and sort
@@ -50,46 +59,6 @@ def sorted_moves_per_poketype():
         sorted_moves[poketype] = subdex
 
     return sorted_moves
-
-def poketype_poketype(num_attack_poketypes=4):
-    """
-    Best attack poketype (set) for all defense poketypes
-    :return:
-    """
-    poketype_chart, poke_dex, attack_dex = load_data(gen=__gen__)
-    poketypes = list(poketype_chart.columns)
-
-    result = {}
-
-    for combo in combinations(range(len(poketypes)), num_attack_poketypes):
-        # acquire the subset for this combo of attack types
-        combo_chart = poketype_chart.values[combo, :]
-
-        # select the max (best) for each attack/defense pair
-        max_combo_chart = np.max(combo_chart, axis=0)
-
-        # compute score
-        # TODO maybe weigth the equation by an exponential?
-        score = sum(max_combo_chart)
-        # score = sum(max_combo_chart**0.1)
-
-        combo_types = [poketypes[i] for i in combo]
-
-        # store new result to dictionary
-        if score in result:
-            result[score] = result[score] + [combo_types]
-        else:
-            result[score] = [combo_types]
-
-    return result
-
-def poketype_pokemon():
-    # best A poketype (set) for all D pokemon         DummyAttack, Pokemon
-    pass
-
-def pokemon_poketype():
-    # best A pokemon for all D poketypes              4 Attacks & Pokemon, DummyPokemon
-    pass
 
 def _single_pokemon_pokemon(attacking_pokemon_row, store_data):
     """"""
@@ -146,14 +115,11 @@ def _single_pokemon_pokemon(attacking_pokemon_row, store_data):
         move = best_move_per_poketype[poketype]
 
         for col, defending_pokemon in poke_dex.iterrows():
-            # print(attacking_pokemon['name']
-            #       + ' VS '
-            #       + defending_pokemon['name'])
-
             damage = effective_damage(__gen__, move, poketype_chart,
                                       attacking_pokemon=attacking_pokemon,
                                       defending_pokemon=defending_pokemon)
 
+            # TODO process_presum
             # damage = damage / (float(defending_pokemon['STAT_hp']) / 100)
 
             damage = damage * np.sum([float(defending_pokemon[key])
@@ -169,6 +135,7 @@ def _single_pokemon_pokemon(attacking_pokemon_row, store_data):
     """Apply weights if so desired"""
 
     # TODO play with this!
+    # TODO process_post_sum
     # damage_matrix = damage_matrix**0.1
 
     """Find 4 rows that maximize the sum across columns"""
@@ -277,4 +244,3 @@ if __name__ == '__main__':
 
     result = result.sort_values(by=['score'])
     print(result)
-
