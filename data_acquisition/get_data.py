@@ -419,26 +419,48 @@ def get_learnsets():
 
     """
     def get_moves_tables_soup(pokemon, url_template):
-        # TODO delete this
-        # pokemon_name = pokemon['name']
-        #
-        # if pokemon_name[-1] == '♀':
-        #     pokemon_name = pokemon_name[:-1] + '-f'
-        # elif pokemon_name[-1] == '♂':
-        #     pokemon_name = pokemon_name[:-1] + '-m'
-        # elif pokemon_name == 'Mr. Mime':
-        #     pokemon_name = 'mr-mime'
-        # elif pokemon_name == 'Mime Jr.':
-        #     pokemon_name = 'mime-jr'
-        # elif pokemon_name in ['Ho-oh', 'Porygon-Z']:
-        #     pass
-        # else:
-        #     pokemon_name = re.sub(r'\W+', '', pokemon_name)
-
         url = url_template.format(pokemon['urlname'])
 
         soup = web_utils.url_to_soup(url)
-        tables_soup = soup.find_all('table', attrs={"class": "data-table"})
+        soup = soup.find('div', attrs={'class': 'tabset-moves-game'})
+        soup = soup.find('div', attrs={'class': 'tabs-panel-list'})
+
+        panels_list_soup = soup.find_all('div',
+                                         attrs={'class': 'tabs-panel-list'})
+
+        if len(panels_list_soup) == 0:
+            # acquire all tables
+            tables_soup = soup.find_all('table', attrs={'class': 'data-table'})
+
+        else:
+            # acquire only the tables with appropriate tab_names
+            tables_soup = []
+
+            for panel_list_soup in panels_list_soup:
+                tab_list_soup = panel_list_soup.parent.find('div', {'class': 'tabs-tab-list'})
+
+                for tab_soup in tab_list_soup.find_all('a', recursive=False):
+                    # check all tabs in the tab list
+                    #   if the tab-name
+                    #       is the same as the pokemon name (and no subname)
+                    #       OR is the same as the pokemon subname
+                    #   add the corresponding table_soup to the return list
+                    tab_name = str(tab_soup.contents[0])
+                    if ((
+                        len(pokemon['subname']) == 0
+                        and tab_name != pokemon['name']
+                        ) or (
+                        len(pokemon['subname']) > 0
+                        and tab_name != pokemon['subname']
+                        )):
+                        continue
+
+                    href = str(tab_soup['href']).lstrip('#')
+                    panel_soup = panel_list_soup.find('div', attrs={'id': href})
+                    table_soup = panel_soup.find('table',
+                                                 attrs={'class': 'data-table'})
+
+                    tables_soup.append(table_soup)
 
         return tables_soup
 
@@ -448,32 +470,32 @@ def get_learnsets():
 
         moves_tables_soup = get_moves_tables_soup(pokemon, url_template)
 
-        # # for each list of moves
-        # for moves_table_soup in moves_tables_soup:
-        #     thead_cells = \
-        #         moves_table_soup.thead.tr.find_all('th', recursive=False)
-        #
-        #     col_names = [str(cell.div.contents[0]) for cell in thead_cells]
-        #     if 'Move' not in col_names:
-        #         # this is not a moves list (shouldn't happen)
-        #         continue
-        #
-        #     # name of each move in the table
-        #     name_cells = moves_table_soup.find_all('td',
-        #                                            attrs={"class": "cell-name"})
-        #
-        #     # for each move
-        #     for name_cell in name_cells:
-        #         move_name = str(name_cell.a.contents[0])
-        #
-        #         learn_set.add(move_name)
-        #
-        # assert len(learn_set) > 0
+        # for each list of moves
+        for moves_table_soup in moves_tables_soup:
+            thead_cells = \
+                moves_table_soup.thead.tr.find_all('th', recursive=False)
+
+            col_names = [str(cell.div.contents[0]) for cell in thead_cells]
+            if 'Move' not in col_names:
+                # this is not a moves list (shouldn't happen)
+                continue
+
+            # name of each move in the table
+            name_cells = moves_table_soup.find_all('td',
+                                                   attrs={"class": "cell-name"})
+
+            # for each move
+            for name_cell in name_cells:
+                move_name = str(name_cell.a.contents[0])
+
+                learn_set.add(move_name)
+
+        assert len(learn_set) > 0
 
         return learn_set
 
     if settings.__gen__ == 7:
-        raise NotImplementedError
+        url_template = 'https://pokemondb.net/pokedex/{}'
     else:
         url_template = 'https://pokemondb.net/pokedex/{}/moves/%d' \
                        % settings.__gen__
@@ -486,34 +508,21 @@ def get_learnsets():
     pokemon_names = []
     learn_sets = np.zeros((attackdex.shape[0], 0), dtype=bool)
 
-    # TODO delete this
-    # processed = {}
-
     # for each pokemon
     for index, pokemon in pokedex.iterrows():
-        # TODO delete this
-        # if pokemon['name'] in processed and False:
-        #     continue
-        # else:
-        #     print('processing: %3d/%3d - %s' % (index, pokedex.shape[0],
-        #                                         pokemon['name']))
-        #     processed[pokemon['name']] = None
-
-        # TODO
-        if pokemon['name'] != 'Wormadam':
-            continue
+        full_name = '|'.join([pokemon['name'], pokemon['subname']])
 
         print('processing: %3d/%3d - %s' % (index, pokedex.shape[0],
-                                            pokemon['name']))
+                                            full_name))
 
         learn_set = get_learn_set(pokemon, url_template)
 
-        # # update the junction table
-        # pa_col_names.append(pokemon['name'])
-        # temp = np.expand_dims(attackdex['name'].isin(learn_set), axis=1)
-        # pa_junction = np.hstack((pa_junction, temp))
+        # update the junction table
+        pokemon_names.append(full_name)
+        temp = np.expand_dims(attackdex['name'].isin(learn_set), axis=1)
+        learn_sets = np.hstack((learn_sets, temp))
 
-        if index > 10 or True:
+        if index > 2:
             break
 
     return (pd.DataFrame(learn_sets, columns=pokemon_names),
@@ -521,11 +530,11 @@ def get_learnsets():
 
 
 if __name__ == '__main__':
-    GENS = range(1, 7+1)
-    # GENS = [4]
+    # GENS = range(1, 7+1)
+    GENS = [1]
 
-    functions = [get_pokedex, get_attackdex]
-    # functions = [get_learnsets]
+    # functions = [get_pokedex, get_attackdex]
+    functions = [get_learnsets]
     # functions = [get_pokedex, get_attackdex, get_learnsets]
     # functions = []
 
@@ -539,8 +548,8 @@ if __name__ == '__main__':
             df, df_name = func()
 
             print(df.head())
-            print(df.tail())
+            # print(df.tail())
             # print(df)
 
-            # with pd.HDFStore(settings.store_filepath, mode='a') as store:
-            #     store[df_name] = df
+            with pd.HDFStore(settings.store_filepath, mode='a') as store:
+                store[df_name] = df
