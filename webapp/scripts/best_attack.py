@@ -2,8 +2,13 @@
 
 """
 
+# TODO CONTINUE HERE
+# fix gen 4...
+# weight functions
+# filter attacks
+
 # TODO Clear some attacks: future sight, outrage, focus punch
-# TODO add "exceptions" to the same general file
+# TODO add "exceptions" to the same general file (ditto...)
 
 # TODO make the different weight functions store to different files
 # TODO try different weight functions
@@ -25,12 +30,15 @@ from formulas import effective_damage
 
 def _single_pokemon_pokemon(attacking_pokemon_row, store_data):
     """"""
-    (poketype_chart, poke_dex, attack_dex, pa_junction) = store_data
+    (poketype_chart, pokedex, attackdex, learnsets) \
+        = (store_data[key] for key in ('poketype_chart', 'pokedex',
+                                       'attackdex', 'learnsets'))
 
-    attacking_pokemon = poke_dex.iloc[attacking_pokemon_row]
+    attacking_pokemon = pokedex.iloc[attacking_pokemon_row]
 
     """exceptions..."""
 
+    # TODO better solution for this?
     if attacking_pokemon['name'] in ['Ditto',
                                      'Wobbuffet',
                                      'Smeargle',
@@ -44,11 +52,13 @@ def _single_pokemon_pokemon(attacking_pokemon_row, store_data):
 
     """Strongest attack if each poketype"""
 
-    def get_best_move_per_poketype(pokemon,
-                                   poke_dex, attack_dex, pa_junction):
+    def get_best_move_per_poketype(pokemon, pokedex, attackdex, learnsets):
 
         sorted_moves = sorted_moves_per_poketype()
-        cur_pokemon_moves = attack_dex[pa_junction[pokemon['name']]]['name']
+
+        full_name = '|'.join([pokemon['name'], pokemon['subname']])
+
+        cur_pokemon_moves = attackdex[learnsets[full_name]]['name']
 
         best_move_per_poketype = {}
 
@@ -65,33 +75,34 @@ def _single_pokemon_pokemon(attacking_pokemon_row, store_data):
         return best_move_per_poketype
 
     best_move_per_poketype = get_best_move_per_poketype(attacking_pokemon,
-                                                        poke_dex,
-                                                        attack_dex,
-                                                        pa_junction)
+                                                        pokedex,
+                                                        attackdex,
+                                                        learnsets)
+
     poketypes = list(best_move_per_poketype.keys())
 
     """Fill matrix: Attack X defending pokemon"""
 
-    damage_matrix = np.zeros((len(poketypes), poke_dex.shape[0]))
+    damage_matrix = np.zeros((len(poketypes), pokedex.shape[0]))
 
     for row, poketype in enumerate(poketypes):
         move = best_move_per_poketype[poketype]
 
-        for col, defending_pokemon in poke_dex.iterrows():
-            damage = effective_damage(__gen__, move, poketype_chart,
+        for col, defending_pokemon in pokedex.iterrows():
+            damage = effective_damage(move, poketype_chart,
                                       attacking_pokemon=attacking_pokemon,
                                       defending_pokemon=defending_pokemon)
 
-            # TODO process_presum
-            # damage = damage / (float(defending_pokemon['STAT_hp']) / 100)
+            # TODO process_presum (move this elsewhere as a function)
+            # damage = damage / (float(defending_pokemon['hp']) / 100)
 
             damage = damage * np.sum([float(defending_pokemon[key])
-                                      for key in ('STAT_hp',
-                                                  'STAT_attack',
-                                                  'STAT_defense',
-                                                  'STAT_sp_attack',
-                                                  'STAT_sp_defense')]) / 500
-
+                                      for key in ('hp',
+                                                  'attack',
+                                                  'defense',
+                                                  'sp_attack',
+                                                  'sp_defense',
+                                                  'speed')]) / 600
 
             damage_matrix[row, col] = damage
 
@@ -136,10 +147,9 @@ def pokemon_pokemon(overwrite=False):
     best A pokemon for all D pokemon
       4 Attacks & Pokemon, Pokemon
     """
-    project_path = os.path.split(os.path.abspath(os.path.dirname(__file__)))[0]
-    # filepath = 'results/gen_{:d}_simple.hdf5'.format(__gen__)
-    filepath = 'results/gen_{:d}_2.hdf5'.format(__gen__)
-    filepath = os.path.join(project_path, filepath)
+    filepath = 'webapp/data/results/gen_{:d}_simple.hdf5'.format(settings.__gen__)
+    # filepath = 'results/gen_{:d}_2.hdf5'.format(settings.__gen__)
+    filepath = os.path.join(settings.project_path, filepath)
 
     if overwrite or not os.path.exists(filepath):
         results = []
@@ -150,28 +160,41 @@ def pokemon_pokemon(overwrite=False):
             num_processed = stored_result.shape[0]
             results = list(stored_result.values)
 
-    store_data = load_data(__gen__)
-    (poketype_chart, poke_dex, attack_dex, pa_junction) = store_data
+    with pd.HDFStore(settings.store_filepath, mode='r') as store:
+        # poketypes = store['poketypes']
+        # move_categories = store['move_categories']
+        poketype_chart = store['poketype_chart']
+        pokedex = store['pokedex']
+        attackdex = store['attackdex']
+        learnsets = store['learnsets']
 
-    col_names = ['pokemon', 'sub_name',
+        store_data = {
+            'poketype_chart': poketype_chart,
+            'pokedex': pokedex,
+            'attackdex': attackdex,
+            'learnsets': learnsets
+        }
+
+    col_names = ['pokemon', 'subname',
                  'move1', 'move2', 'move3', 'move4',
                  'score']
 
-    for index, pokemon in poke_dex.iterrows():
+    for index, pokemon in pokedex.iterrows():
         # if index < 13:
         #     continue
-        # if index > 100:
+        # if index > 50:
         #     break
 
         if not overwrite and index < num_processed:
             continue
 
-        print('processing: %3d/%3d - %s' % (index, poke_dex.shape[0],
-                                            pokemon['name']))
+        full_name = '|'.join([pokemon['name'], pokemon['subname']])
+        print('processing: %3d/%3d - %s' % (index, pokedex.shape[0],
+                                            full_name))
 
         best_combo = _single_pokemon_pokemon(index, store_data)
 
-        cur_result = [pokemon['name'], pokemon['sub_name']] \
+        cur_result = [pokemon['name'], pokemon['subname']] \
                      + best_combo['move_names'] \
                      + [best_combo['score']]
 
@@ -184,23 +207,11 @@ def pokemon_pokemon(overwrite=False):
 
 
 if __name__ == '__main__':
-    settings.init(GEN=1)
-
-    # TODO CONTINUE HERE
-    # rewrite this file
-    # fix Deoxys in get_data.py
+    settings.init(GEN=2)
 
     # sorted_moves = sorted_moves_per_poketype()
 
-    # result = pokemon_pokemon(overwrite=False)
+    result = pokemon_pokemon(overwrite=False)
 
-    # # result.sort_values(by=['score'], ascending=False)
-    # # print(result.head())
-    #
-    # result = result[result['sub_name'] == '']
-    # result = result.reset_index(drop=True)
-    #
-    # # result = result.iloc[:151]
-    #
-    # result = result.sort_values(by=['score'])
-    # print(result)
+    result = result.sort_values(by=['score'])
+    print(result)

@@ -20,7 +20,7 @@ def _bad_conditional_solution_POKEMON(pokemon):
     (nat_no, name, subname, urlname, poketypes,
      hp, attack, defense, sp_attack, sp_defense, speed) = pokemon
 
-    poketypes = poketypes.split(';')
+    poketypes = [pt for pt in poketypes.split(';') if len(pt) > 0]
     stats = (hp, attack, defense, sp_attack, sp_defense, speed)
 
     """modify the data"""
@@ -415,6 +415,17 @@ def get_learnsets():
         the rows are 1-to-1 with the attackdex
 
     """
+    def get_tab_name(panel_soup):
+        href = '#' + str(panel_soup['id'])
+
+        tab_list_soup = panel_soup.parent.parent.find('div', attrs={'class': 'tabs-tab-list'})
+
+        tab_soup = tab_list_soup.find('a', attrs={'href': href})
+
+        tab_name = str(tab_soup.contents[0])
+
+        return tab_name
+
     def get_moves_tables_soup(pokemon, url_template):
         url = url_template.format(pokemon['urlname'])
 
@@ -422,44 +433,35 @@ def get_learnsets():
         soup = soup.find('div', attrs={'class': 'tabset-moves-game'})
         soup = soup.find('div', attrs={'class': 'tabs-panel-list'})
 
-        panels_list_soup = soup.find_all('div',
-                                         attrs={'class': 'tabs-panel-list'})
+        returned_tables_soup = []
 
-        if len(panels_list_soup) == 0:
-            # acquire all tables
-            tables_soup = soup.find_all('table', attrs={'class': 'data-table'})
+        tables_soup = soup.find_all('table', attrs={'class': 'data-table'})
 
-        else:
-            # acquire only the tables with appropriate tab_names
-            tables_soup = []
+        for table_soup in tables_soup:
+            if 'tabset-moves-game' not in \
+                    table_soup.parent.parent.parent.parent.parent.parent['class']:
 
-            for panel_list_soup in panels_list_soup:
-                tab_list_soup = panel_list_soup.parent.find('div', {'class': 'tabs-tab-list'})
+                panel_soup = table_soup.parent.parent
 
-                for tab_soup in tab_list_soup.find_all('a', recursive=False):
-                    # check all tabs in the tab list
-                    #   if the tab-name
-                    #       is the same as the pokemon name (and no subname)
-                    #       OR is the same as the pokemon subname
-                    #   add the corresponding table_soup to the return list
-                    tab_name = str(tab_soup.contents[0])
-                    if ((
-                        len(pokemon['subname']) == 0
-                        and tab_name != pokemon['name']
-                        ) or (
-                        len(pokemon['subname']) > 0
-                        and tab_name != pokemon['subname']
-                        )):
-                        continue
+                tab_name = get_tab_name(panel_soup)
 
-                    href = str(tab_soup['href']).lstrip('#')
-                    panel_soup = panel_list_soup.find('div', attrs={'id': href})
-                    table_soup = panel_soup.find('table',
-                                                 attrs={'class': 'data-table'})
+                if ((
+                    len(pokemon['subname']) == 0
+                    and tab_name != pokemon['name']
+                    ) or (
+                    len(pokemon['subname']) > 0
+                    and tab_name != pokemon['subname']
+                    )):
+                    # print(pokemon['name']
+                    #       + '-' + pokemon['subname']
+                    #       + ' ~~~ ' + tab_name)
+                    continue
 
-                    tables_soup.append(table_soup)
+            returned_tables_soup.append(table_soup)
 
-        return tables_soup
+        assert len(returned_tables_soup) > 0
+
+        return returned_tables_soup
 
     def get_learn_set(pokemon, url_template):
         """the set of moves this pokemon can learn"""
@@ -507,6 +509,9 @@ def get_learnsets():
 
     # for each pokemon
     for index, pokemon in pokedex.iterrows():
+        # if pokemon['name'] not in ['Bulbasaur', 'Deoxys']:
+        #         continue
+
         full_name = '|'.join([pokemon['name'], pokemon['subname']])
 
         print('processing: %3d/%3d - %s' % (index, pokedex.shape[0],
@@ -521,21 +526,22 @@ def get_learnsets():
 
         # if index > 2:
         #     break
+        # break
 
     return (pd.DataFrame(learn_sets, columns=pokemon_names),
             'learnsets')
 
 
 if __name__ == '__main__':
-    GENS = range(3, 7+1)
-    # GENS = [1]
+    GENS = range(4, 7+1)
+    # GENS = [3]
+
+    # TODO continue with GEN 4
 
     # functions = [get_pokedex, get_attackdex]
-    # functions = [get_learnsets]
+    functions = [get_learnsets]
     # functions = [get_pokedex, get_attackdex, get_learnsets]
-    functions = []
-
-    # TODO figure out what's up with deoxys
+    # functions = []
 
     # for GEN in range(1, 8):
     for GEN in GENS:
@@ -550,5 +556,5 @@ if __name__ == '__main__':
             # print(df.tail())
             # print(df)
 
-            # with pd.HDFStore(settings.store_filepath, mode='a') as store:
-            #     store[df_name] = df
+            with pd.HDFStore(settings.store_filepath, mode='a') as store:
+                store[df_name] = df

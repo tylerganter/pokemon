@@ -29,29 +29,25 @@ BEST POKEMON:
 best average damage given and taken
 """
 
-from __future__ import division
+import numpy as np
+
+from context import settings
 
 def from_poketype_chart(poketype_chart, attack_poketype, defending_pokemon):
-    # TODO find a better solution for this...
-    # and also make a solution for gen 1 (dark and steel)
-    if defending_pokemon['poketype1'] == 'fairy':
-        defending_pokemon['poketype1'] = 'normal'
-    if defending_pokemon['poketype2'] == 'fairy':
-        defending_pokemon['poketype2'] = ''
-
     attack_row_index = list(poketype_chart.columns).index(attack_poketype)
 
     attack_row = poketype_chart.iloc[attack_row_index]
 
-    effectiveness = float(attack_row[defending_pokemon['poketype1']])
+    defending_poketypes = [dpt for dpt
+                           in defending_pokemon['poketypes'].split(';')
+                           if len(dpt) > 0]
 
-    if len(defending_pokemon['poketype2']) > 0:
-        effectiveness = effectiveness \
-                        * float(attack_row[defending_pokemon['poketype2']])
+    effectiveness = np.product([float(attack_row[dpt])
+                                for dpt in defending_poketypes])
 
     return effectiveness
 
-def effective_damage(__gen__, attack, poketype_chart,
+def effective_damage(attack, poketype_chart,
                      attacking_pokemon=None, defending_pokemon=None):
     """
 
@@ -76,14 +72,13 @@ def effective_damage(__gen__, attack, poketype_chart,
     if attacking_pokemon is not None:
         # choose attack or special attack stat
         if attack['category'] == 'physical':
-            attack_stat = float(attacking_pokemon['STAT_attack'])
+            attack_stat = float(attacking_pokemon['attack'])
         elif attack['category'] == 'special':
-            attack_stat = float(attacking_pokemon['STAT_sp_attack'])
+            attack_stat = float(attacking_pokemon['sp_attack'])
         else:
             raise AttributeError
 
-        STAB = attack['poketype'] in [attacking_pokemon['poketype1'],
-                                      attacking_pokemon['poketype2']]
+        STAB = attack['poketype'] in attacking_pokemon['poketypes'].split(';')
     else:
         # defaults
         attack_stat = 100
@@ -91,9 +86,9 @@ def effective_damage(__gen__, attack, poketype_chart,
 
     if defending_pokemon is not None:
         if attack['category'] == 'physical':
-            defense_stat = float(defending_pokemon['STAT_defense'])
+            defense_stat = float(defending_pokemon['defense'])
         elif attack['category'] == 'special':
-            defense_stat = float(defending_pokemon['STAT_sp_defense'])
+            defense_stat = float(defending_pokemon['sp_defense'])
         else:
             raise AttributeError
 
@@ -113,9 +108,9 @@ def effective_damage(__gen__, attack, poketype_chart,
     damage = damage / 50 + 2
 
     # apply critical hit probability
-    if __gen__ > 5:
+    if settings.__gen__ > 5:
         damage = damage * (1 + 0.5 * critical_prob)
-    elif __gen__ > 1:
+    elif settings.__gen__ > 1:
         damage = damage * (1 + 1 * critical_prob)
 
     # apply same-type attack bonus
