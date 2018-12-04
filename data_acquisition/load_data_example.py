@@ -23,4 +23,21 @@ if __name__ == '__main__':
         """Basics"""
         # print(store['poketypes'])
         # print(store['move_categories'])
-        print(store['poketype_chart'])
+        # print(store['poketype_chart'])
+
+        """Large Data Tables"""
+
+        # print(store['pokedex'].head())
+        # print(store['attackdex'].head())
+
+        print(store['learnsets'].head())
+        print(store['learnsets'].tail())
+
+        """Assign to variables"""
+
+        # poketypes = store['poketypes']
+        # move_categories = store['move_categories']
+        # poketype_chart = store['poketype_chart']
+        # pokedex = store['pokedex']
+        # attackdex = store['attackdex']
+        # learnsets = store['learnsets']

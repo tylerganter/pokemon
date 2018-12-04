@@ -2,10 +2,6 @@
 
 """
 
-# TODO get gen 7 junction working
-# TODO exhaustively make everything correct for the GEN...
-#       get poketype for pokemon from: https://pokemondb.net/pokedex/game/red-blue-yellow
-
 # TODO Clear some attacks: future sight, outrage, focus punch
 # TODO add "exceptions" to the same general file
 
@@ -13,48 +9,19 @@
 # TODO try different weight functions
 # TODO externalize the weight functions
 
-# TODO          use "changes" per pokemon page
-
-from __future__ import division, print_function
-# from __future__ import absolute_import #TODO why doesn't pycharm like this?
-
+# Standard library imports
 import os
-import numpy as np
-import pandas as pd
 from itertools import combinations
 
-from load_data import load_data
+# Third party imports
+import numpy as np
+import pandas as pd
+
+# Local application imports
+from context import settings
+from preparatory import sorted_moves_per_poketype
 from formulas import effective_damage
 
-# TODO move this to another file
-def sorted_moves_per_poketype():
-    """
-    compute the effective power of each move and then split by poketype and sort
-
-    :param gen:
-    :return: a dictionary where each key is a poketype
-            and each value is a dataframe of moves of that poketype
-            sorted by effective power
-    """
-    poketype_chart, poke_dex, attack_dex, pa_junction = load_data(__gen__)
-    poketypes = list(poketype_chart.columns)
-
-    # compute and set the effective power
-    effective_power = attack_dex['power'] * attack_dex['accuracy'] / 100 \
-                      * attack_dex['repeat'] / attack_dex['turns_used']
-
-    attack_dex['effective_power'] = effective_power
-
-    sorted_moves = {}
-
-    for poketype in poketypes:
-        subdex = attack_dex[attack_dex['poketype'] == poketype]
-
-        subdex = subdex.sort_values(by=['effective_power'], ascending=False)
-
-        sorted_moves[poketype] = subdex
-
-    return sorted_moves
 
 def _single_pokemon_pokemon(attacking_pokemon_row, store_data):
     """"""
@@ -215,28 +182,25 @@ def pokemon_pokemon(overwrite=False):
 
     return pd.DataFrame(results, columns=col_names)
 
+
 if __name__ == '__main__':
-    # num_attack_poketypes = 4
-    # result = poketype_poketype(num_attack_poketypes=num_attack_poketypes)
-    # keys = list(result.keys())
-    # keys.sort(reverse=True)
-    # for key in keys[:2]:
-    #     for move_set in result[key]:
-    #         print('%5.1f - %s' % (key, move_set))
+    settings.init(GEN=1)
 
-    __gen__ = 3
+    # TODO CONTINUE HERE
+    # rewrite this file
+    # fix Deoxys in get_data.py
 
-    # sorted_moves_per_poketype()
+    # sorted_moves = sorted_moves_per_poketype()
 
-    result = pokemon_pokemon(overwrite=False)
+    # result = pokemon_pokemon(overwrite=False)
 
-    # result.sort_values(by=['score'], ascending=False)
-    # print(result.head())
-
-    result = result[result['sub_name'] == '']
-    result = result.reset_index(drop=True)
-
-    # result = result.iloc[:151]
-
-    result = result.sort_values(by=['score'])
-    print(result)
+    # # result.sort_values(by=['score'], ascending=False)
+    # # print(result.head())
+    #
+    # result = result[result['sub_name'] == '']
+    # result = result.reset_index(drop=True)
+    #
+    # # result = result.iloc[:151]
+    #
+    # result = result.sort_values(by=['score'])
+    # print(result)

@@ -5,8 +5,6 @@
 """
 
 # Standard library imports
-import os
-import re
 
 # Third party imports
 import numpy as np
@@ -404,7 +402,6 @@ def get_attackdex():
     return (pd.DataFrame(attackdex, columns=col_names),
             'attackdex')
 
-# TODO CONTINUE HERE
 def get_learnsets():
     """
     attack <-> pokemon
@@ -522,21 +519,23 @@ def get_learnsets():
         temp = np.expand_dims(attackdex['name'].isin(learn_set), axis=1)
         learn_sets = np.hstack((learn_sets, temp))
 
-        if index > 2:
-            break
+        # if index > 2:
+        #     break
 
     return (pd.DataFrame(learn_sets, columns=pokemon_names),
             'learnsets')
 
 
 if __name__ == '__main__':
-    # GENS = range(1, 7+1)
-    GENS = [1]
+    GENS = range(3, 7+1)
+    # GENS = [1]
 
     # functions = [get_pokedex, get_attackdex]
-    functions = [get_learnsets]
+    # functions = [get_learnsets]
     # functions = [get_pokedex, get_attackdex, get_learnsets]
-    # functions = []
+    functions = []
+
+    # TODO figure out what's up with deoxys
 
     # for GEN in range(1, 8):
     for GEN in GENS:
@@ -547,9 +546,9 @@ if __name__ == '__main__':
 
             df, df_name = func()
 
-            print(df.head())
+            # print(df.head())
             # print(df.tail())
             # print(df)
 
-            with pd.HDFStore(settings.store_filepath, mode='a') as store:
-                store[df_name] = df
+            # with pd.HDFStore(settings.store_filepath, mode='a') as store:
+            #     store[df_name] = df
