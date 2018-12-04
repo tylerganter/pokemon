@@ -2,13 +2,9 @@
 
 """
 
-# TODO make the url map for pokemon something general
-# TODO get TOTAL and SPEED stats
-
 # TODO get gen 7 junction working
 # TODO exhaustively make everything correct for the GEN...
 #       get poketype for pokemon from: https://pokemondb.net/pokedex/game/red-blue-yellow
-#       acquiring move junction requires considering Alolan or not
 
 # TODO Clear some attacks: future sight, outrage, focus punch
 # TODO add "exceptions" to the same general file
