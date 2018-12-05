@@ -270,9 +270,9 @@ def pokemon_pokemon(overwrite=False, start_idx=0, end_idx=np.inf):
 
 
 if __name__ == '__main__':
-    METHOD = 'mean'
+    # METHOD = 'mean'
     # METHOD = 'median'
-    # METHOD = 'harmonic_mean'
+    METHOD = 'harmonic_mean'
     # METHOD = 'min'
 
     settings.init(GEN=2, METHOD=METHOD)

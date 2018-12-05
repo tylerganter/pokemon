@@ -51,6 +51,35 @@ def add_best_worst(results):
 
     return results
 
+def plot_matrix(results, vectors, N=10):
+    full_pokemon_names = np.array(results['pokemon'] + results['subname'])
+
+    z = vectors.values
+    xticks = full_pokemon_names
+    yticks = full_pokemon_names
+
+    # attack_indices = (-np.array(results['a_score'])).argsort()
+    # defense_indices = np.array(results['d_score']).argsort()
+
+    attack_indices = defense_indices = \
+            (-np.array(results['ad_score'])).argsort()
+
+    z = z[attack_indices, :]
+    z = z[:, defense_indices]
+    yticks = yticks[attack_indices]
+    xticks = xticks[defense_indices]
+
+    z = z[:N, :N]
+    z = np.log(z)
+
+    plt.imshow(z, cmap=plt.get_cmap('RdYlGn'))
+
+    plt.xticks(range(z.shape[1]), xticks[:z.shape[1]], rotation=45)
+    plt.yticks(range(z.shape[1]), yticks[:z.shape[1]], rotation=45)
+
+    plt.xlabel('Defending Pokemon')
+    plt.ylabel('Attacking Pokemon')
+
 def hist_max_combo_vector(mc_vector, result):
     import matplotlib.pyplot as plt
     bins = np.exp((np.linspace(np.log(min(mc_vector)),
@@ -78,7 +107,7 @@ if __name__ == '__main__':
     METHOD = 'harmonic_mean'
     # METHOD = 'min'
 
-    settings.init(GEN=3, METHOD=METHOD)
+    settings.init(GEN=2, METHOD=METHOD)
 
     # number of top pokemon to show
     N = 10
@@ -113,57 +142,31 @@ if __name__ == '__main__':
 
     """Attack Result"""
 
-    # results = results.sort_values(by=['a_score'], ascending=False)
-    # results = results.reset_index(drop=True)
-    # print(results.head(n=N))
+    # attack_results = results.sort_values(by=['a_score'], ascending=False)
+    # attack_results = attack_results.reset_index(drop=True)
+    # print(attack_results.head(n=N))
 
     """Defense Result"""
 
-    # results = results.sort_values(by=['d_score'])
-    # results = results.reset_index(drop=True)
-    # print(results.head(n=N))
+    # defense_results = results.sort_values(by=['d_score'])
+    # defense_results = defense_results.reset_index(drop=True)
+    # print(defense_results.head(n=N))
 
     """Combined Result"""
 
-    results = results.sort_values(by=['ad_score'], ascending=False)
-    results = results.reset_index(drop=True)
-    print(results.head(n=N))
+    combined_results = results.sort_values(by=['ad_score'], ascending=False)
+    combined_results = combined_results.reset_index(drop=True)
+    print(combined_results.head(n=N))
+
+    """Grid Image"""
+
+    plot_matrix(results, vectors, N=N)
+    plt.show()
 
     """Histograms"""
 
     # TODO plot grid matrix with colors
     # sort columns and rows by best/worst attack/defense
-
-    """Grid Image"""
-
-    full_pokemon_names = np.array(results['pokemon'] + results['subname'])
-
-    z = vectors.values
-    xticks = full_pokemon_names
-    yticks = full_pokemon_names
-
-
-    # attack_indices = (-np.array(results['a_score'])).argsort()
-    # defense_indices = np.array(results['d_score']).argsort()
-
-    attack_indices = defense_indices = (-np.array(results['ad_score'])).argsort()
-
-    z = z[attack_indices, :]
-    z = z[:, defense_indices]
-    yticks = yticks[attack_indices]
-    xticks = xticks[defense_indices]
-
-    z = z[:N,:N]
-    z = np.log(z)
-
-    plt.imshow(z, cmap=plt.get_cmap('RdYlGn'))
-
-    plt.xticks(range(z.shape[1]), xticks[:z.shape[1]], rotation=45)
-    plt.yticks(range(z.shape[1]), yticks[:z.shape[1]], rotation=45)
-
-    plt.xlabel('Defending Pokemon')
-    plt.ylabel('Attacking Pokemon')
-    plt.show()
 
     # TODO histogram ATTACK and DEFENSE
     # for a given pokemon:
@@ -173,5 +176,7 @@ if __name__ == '__main__':
     # TODO this is broken because results have been sorted but vectors arent
     # IDX = 0
     # hist_max_combo_vector(vectors.iloc[IDX], results.iloc[IDX])
+
+
 
 
