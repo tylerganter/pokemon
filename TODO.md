@@ -1,4 +1,3 @@
+clean up the code
 
-split best_attack into two files
-
-deploy!
+deploy

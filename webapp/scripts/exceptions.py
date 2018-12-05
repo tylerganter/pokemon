@@ -27,7 +27,7 @@ move_skip_list = [
     'Outrage', 'Thrash',
 
     # self harming moves
-    # 'Double-Edge'
+    # 'Double-Edge', 'Take Down',
 
     # sharply lowers attack
     'Psycho Boost',
