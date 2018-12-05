@@ -22,3 +22,5 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__),
                                                 '../..')))
 
 from data_acquisition import settings
+
+from utils.harmonic_mean import harmonic_mean

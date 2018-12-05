@@ -12,7 +12,7 @@ attacking_pokemon_exceptions = [
     'Wynaut'
 ]
 best_combo_exception = {
-    'score': 0,
+    'a_score': 0,
     'move_poketypes': [''] * 4,
     'move_names': [''] * 4
 }

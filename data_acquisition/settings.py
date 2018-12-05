@@ -23,7 +23,7 @@ def init(GEN=1, METHOD='median'):
     assert __gen__ >= 1 and __gen__ <= 7, 'invalid __gen__'
 
     __method__ = str(METHOD)
-    assert __method__ in ['mean', 'median', 'power', 'min']
+    assert __method__ in ['mean', 'median', 'harmonic_mean', 'min']
 
     store_filepath = store_filepath_template.format(__gen__)
 
