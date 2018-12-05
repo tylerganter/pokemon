@@ -2,6 +2,11 @@
 # -*- coding: utf-8 -*-
 """
 
+This is a potential second version of get_data.py
+
+The current version is getting data from pokemondb.net
+It is a good site however many of the changes for newer game versions aren't
+isolated to their own webpage
 
 """
 

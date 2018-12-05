@@ -33,7 +33,8 @@ def _bad_conditional_solution_POKEMON(pokemon):
             return None, False
 
     if settings.__gen__ <= 5:
-        if subname.startswith('Mega'):
+        if (subname.startswith('Mega')
+            or subname.startswith('Primal')):
             return None, False
 
         if 'fairy' in poketypes:
@@ -438,9 +439,16 @@ def get_learnsets():
         tables_soup = soup.find_all('table', attrs={'class': 'data-table'})
 
         for table_soup in tables_soup:
-            if 'tabset-moves-game' not in \
-                    table_soup.parent.parent.parent.parent.parent.parent['class']:
+            # find out how many tab-panels deep this table is
+            observed_classes = []
+            table_soup_ancestor = table_soup
+            while 'tabset-moves-game' not in observed_classes:
+                table_soup_ancestor = table_soup_ancestor.parent
+                observed_classes += list(table_soup_ancestor['class'])
 
+            # if it's more than one, we need to check if this table
+            # is applicable to this pokemon sub name
+            if observed_classes.count('tabs-panel-list') > 1:
                 panel_soup = table_soup.parent.parent
 
                 tab_name = get_tab_name(panel_soup)
@@ -533,14 +541,12 @@ def get_learnsets():
 
 
 if __name__ == '__main__':
-    GENS = range(4, 7+1)
-    # GENS = [3]
-
-    # TODO continue with GEN 4
+    GENS = range(5, 8)
+    # GENS = [3, 4]
 
     # functions = [get_pokedex, get_attackdex]
-    functions = [get_learnsets]
-    # functions = [get_pokedex, get_attackdex, get_learnsets]
+    # functions = [get_learnsets]
+    functions = [get_pokedex, get_attackdex, get_learnsets]
     # functions = []
 
     # for GEN in range(1, 8):
