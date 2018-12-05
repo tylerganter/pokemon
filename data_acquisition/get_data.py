@@ -204,6 +204,15 @@ def get_pokedex():
             else:
                 continue
 
+        """Exceptions..."""
+
+        if pokemon[col_names.index('name')] in ['Slakoth', 'Slaking']:
+            """These guys only attack every other turn..."""
+            pokemon[col_names.index('attack')] \
+                = str(int(int(pokemon[col_names.index('attack')]) / 2))
+            pokemon[col_names.index('sp_attack')] \
+                = str(int(int(pokemon[col_names.index('sp_attack')]) / 2))
+
         return pokemon
 
     # max national number for this gen
@@ -541,12 +550,12 @@ def get_learnsets():
 
 
 if __name__ == '__main__':
-    GENS = range(5, 8)
-    # GENS = [3, 4]
+    GENS = range(4, 8)
+    # GENS = [3]
 
-    # functions = [get_pokedex, get_attackdex]
+    functions = [get_pokedex, get_attackdex]
     # functions = [get_learnsets]
-    functions = [get_pokedex, get_attackdex, get_learnsets]
+    # functions = [get_pokedex, get_attackdex, get_learnsets]
     # functions = []
 
     # for GEN in range(1, 8):

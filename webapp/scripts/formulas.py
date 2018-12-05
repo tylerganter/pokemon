@@ -107,6 +107,9 @@ def effective_damage(attack, poketype_chart,
     damage = (2 * level / 5 + 2) * power * attack_stat / defense_stat
     damage = damage / 50 + 2
 
+    # simpler but less accurate formula
+    # damage = power * attack_stat / defense_stat
+
     # apply critical hit probability
     if settings.__gen__ > 5:
         damage = damage * (1 + 0.5 * critical_prob)

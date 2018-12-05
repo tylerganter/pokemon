@@ -275,7 +275,7 @@ if __name__ == '__main__':
     # METHOD = 'harmonic_mean'
     # METHOD = 'min'
 
-    settings.init(GEN=1, METHOD=METHOD)
+    settings.init(GEN=2, METHOD=METHOD)
 
     start_idx = 0
     end_idx = 1000
@@ -287,10 +287,10 @@ if __name__ == '__main__':
 
     results = results.sort_values(by=['a_score'], ascending=False)
     results = results.reset_index(drop=True)
-    print(results.head(n=20))
+    print(results.head(n=10))
 
     """Defense Result"""
 
     results = results.sort_values(by=['d_score'])
     results = results.reset_index(drop=True)
-    print(results.head(n=20))
+    print(results.head(n=10))

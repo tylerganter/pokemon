@@ -23,13 +23,13 @@ move_skip_list = [
     'Dream Eater',
     'Focus Punch',
 
-    """moves that lock the user in for multiple moves"""
-    'Outrage',
+    # moves that lock the user in for multiple moves
+    'Outrage', 'Thrash',
 
-    # """self harming moves"""
+    # self harming moves
     # 'Double-Edge'
 
-    """sharply lowers attack"""
+    # sharply lowers attack
     'Psycho Boost',
     'Overheat'
 ]
