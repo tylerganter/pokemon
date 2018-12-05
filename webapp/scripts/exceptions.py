@@ -19,7 +19,7 @@ best_combo_exception = {
 
 
 move_skip_list = [
-    'Future Sight',
+    'Future Sight', 'Doom Desire',
     'Dream Eater',
     'Focus Punch',
 

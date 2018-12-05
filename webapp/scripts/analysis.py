@@ -89,9 +89,6 @@ if __name__ == '__main__':
         results = store['result']
         vectors = store['vectors']
 
-        temp = results[results['pokemon'] == 'Slaking']
-        print(temp)
-
     # with pd.HDFStore(settings.store_filepath, mode='r') as store:
     #     # poketypes = store['poketypes']
     #     # move_categories = store['move_categories']
