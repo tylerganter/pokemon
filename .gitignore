@@ -90,3 +90,6 @@ ENV/
 
 # Pycharm stuff
 .idea
+
+# Pokemon stuff
+webapp/data/results
