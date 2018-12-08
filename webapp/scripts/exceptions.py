@@ -19,17 +19,24 @@ best_combo_exception = {
 
 
 move_skip_list = [
-    'Future Sight', 'Doom Desire',
     'Dream Eater',
     'Focus Punch',
 
-    # moves that lock the user in for multiple moves
-    'Outrage', 'Thrash',
+    # User receives recoil damage. (1/4)
+    # 'Head Charge', 'Submission', 'Take Down', 'Wild Charge',
 
-    # self harming moves
-    # 'Double-Edge', 'Take Down',
+    # User receives recoil damage. (1/3)
+    # 'Brave Bird', 'Double-Edge', 'Flare Blitz', 'Volt Tackle', 'Wood Hammer',
+
+    # User receives recoil damage. (1/2)
+    'Head Smash', 'Light of Ruin', 'Mind Blown',
+
+    # User attacks for 2-3 turns but then becomes confused.
+    'Outrage', 'Thrash', 'Petal Dance',
 
     # sharply lowers attack
-    'Psycho Boost',
-    'Overheat'
+    'Psycho Boost', 'Overheat', 'Draco Meteor', 'Fleur Cannon', 'Leaf Storm',
+
+    # Damage occurs 2 turns later.
+    'Future Sight', 'Doom Desire',
 ]

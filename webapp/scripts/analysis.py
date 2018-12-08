@@ -174,7 +174,7 @@ if __name__ == '__main__':
     METHOD = 'harmonic_mean'
     # METHOD = 'min'
 
-    settings.init(GEN=4, METHOD=METHOD)
+    settings.init(GEN=2, METHOD=METHOD)
 
     # number of top pokemon to show
     N = 10
