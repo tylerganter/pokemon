@@ -12,10 +12,10 @@ Example for reading the data from the database
 import pandas as pd
 
 # Local application imports
-import settings
+from context import settings
 
 if __name__ == '__main__':
-    settings.init(GEN=1)
+    settings.init(GEN=2)
 
     with pd.HDFStore(settings.store_filepath, mode='r') as store:
         print(store.keys())
@@ -30,8 +30,8 @@ if __name__ == '__main__':
         # print(store['pokedex'].head())
         # print(store['attackdex'].head())
 
-        print(store['learnsets'].head())
-        print(store['learnsets'].tail())
+        # print(store['learnsets'].head())
+        # print(store['learnsets'].tail())
 
         """Assign to variables"""
 

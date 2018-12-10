@@ -4,6 +4,13 @@
 
 Get basic info for database
 
+Running main will (if selected) acquire
+    poketypes           - fire, water, electric, etc.
+    move categories     - physical, special or status
+    poketype chart      - square matrix of effectiveness
+                            (fire does x2 (double damage) to grass, etc)
+and write these all to the HDF5 store
+
 """
 
 # Standard library imports

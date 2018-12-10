@@ -2,6 +2,14 @@
 # -*- coding: utf-8 -*-
 """
 
+Get pokemon info for database
+
+Running main will (if selected) acquire:
+    pokedex - list of pokemon with stats
+    attackdex - list of attacks with stats
+    learnsets - matrix linking pokemon to moves they can learn
+and write these all to the HDF5 store
+
 """
 
 # Standard library imports
@@ -11,8 +19,7 @@ import numpy as np
 import pandas as pd
 
 # Local application imports
-import settings
-from context import web_utils
+from context import settings, web_utils
 from basics import get_poketypes, get_move_categories
 
 
@@ -550,11 +557,11 @@ def get_learnsets():
 
 
 if __name__ == '__main__':
-    GENS = range(4, 8)
-    # GENS = [3]
+    # GENS = range(4, 8)
+    GENS = [1]
 
-    functions = [get_pokedex, get_attackdex]
-    # functions = [get_learnsets]
+    # functions = [get_pokedex, get_attackdex]
+    functions = [get_learnsets]
     # functions = [get_pokedex, get_attackdex, get_learnsets]
     # functions = []
 
