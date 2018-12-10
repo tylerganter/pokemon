@@ -1,0 +1,26 @@
+{% extends "template.html" %}
+{% block content %}
+
+
+<section id="side-page">
+<div class="side-page-content">
+    <h1>Combined Attack and Defense</h1>
+    {% if not gen %}
+        <p>You must select a GEN</p>
+        <a href="{{ url_for('combined') }}/1">GEN 1</a>
+        <a href="{{ url_for('combined') }}/2">GEN 2</a>
+        <a href="{{ url_for('combined') }}/3">GEN 3</a>
+        <a href="{{ url_for('combined') }}/4">GEN 4</a>
+        <a href="{{ url_for('combined') }}/5">GEN 5</a>
+        <a href="{{ url_for('combined') }}/6">GEN 6</a>
+        <a href="{{ url_for('combined') }}/7">GEN 7</a>
+    {% else %}
+        <p>GEN {{ gen }}</p>
+    {% endif %}
+</div>
+</section>
+
+
+<!--Services-->
+
+{% endblock %}

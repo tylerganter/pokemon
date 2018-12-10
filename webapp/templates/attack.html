@@ -1,0 +1,28 @@
+{% extends "template.html" %}
+{% block content %}
+
+
+<section id="side-page">
+<div class="side-page-content">
+    {% if not gen %}
+        <h1>Attack</h1>
+        <p>You must select a GEN</p>
+        <a href="{{ url_for('attack') }}/1">GEN 1</a>
+        <a href="{{ url_for('attack') }}/2">GEN 2</a>
+        <a href="{{ url_for('attack') }}/3">GEN 3</a>
+        <a href="{{ url_for('attack') }}/4">GEN 4</a>
+        <a href="{{ url_for('attack') }}/5">GEN 5</a>
+        <a href="{{ url_for('attack') }}/6">GEN 6</a>
+        <a href="{{ url_for('attack') }}/7">GEN 7</a>
+    {% else %}
+        <h1>Attack - GEN {{ gen }}</h1>
+
+        {{result_table | safe}}
+    {% endif %}
+</div>
+</section>
+
+
+<!--Services-->
+
+{% endblock %}

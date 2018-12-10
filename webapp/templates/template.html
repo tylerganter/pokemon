@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+    <title>Best Pokemon | Who will it be??</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <!-- MaxCDN Latest compiled and minified CSS -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css">
+    <!-- jQuery library -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+    <!-- Popper JS -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js"></script>
+    <!-- MaxCDN Latest compiled JavaScript -->
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js"></script>
+
+    <link rel="shortcut icon"
+          href="{{ url_for('static', filename='images/favicon.png') }}"
+          type="image/png">
+    <link rel="icon"
+          href="{{ url_for('static', filename='images/favicon.png') }}"
+          type="image/ong">
+
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/template.css') }}">
+
+    <!-- Add icon library -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+    <link rel="stylesheet" href="/path/to/folder/css/academicons.min.css"/>
+    <link rel="stylesheet" href="https://cdn.rawgit.com/jpswalsh/academicons/master/css/academicons.min.css">
+</head>
+<body>
+
+<header>
+<nav class="navbar navbar-expand-sm navbar-dark" id="site-navbar">
+    <a class="navbar-brand" href="{{ url_for('home') }}">
+        <img src="{{ url_for('static', filename='images/pokeball.svg') }}"
+             style="width:64px;height:64px;">
+    </a>
+
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#collapsibleNavbar">
+        <span class="navbar-toggler-icon"></span>
+    </button>
+
+    <div class="collapse navbar-collapse" id="collapsibleNavbar">
+        <ul class="navbar-nav">
+            <li class="nav-item">
+                <a class="nav-link"
+                   href="{{ url_for('attack') }}">Attack</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link"
+                   href="{{ url_for('defense') }}">Defense</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link"
+                   href="{{ url_for('combined') }}">Combined</a>
+            </li>
+        </ul>
+    </div>
+
+</nav>
+</header>
+
+{% block content %}
+{% endblock %}
+
+<footer id="site-footer">
+<div class="footer-content">
+    <!--<div>Designed & built by Tyler Ganter 2018</div>-->
+<div class="row">
+    <div class="col-sm-6 footer-email">
+        <a href="#">source code</a>
+    </div>
+</div>
+</div>
+</footer>
+
+</body>
+</html>

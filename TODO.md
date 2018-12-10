@@ -1,4 +1,4 @@
-finish processing
+compress the dataframes (dtype=boolean, uint8, etc.)
 
 clean up the code
 
