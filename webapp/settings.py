@@ -6,17 +6,19 @@ initializer common to acquiring and using data
 import os
 
 __gen__ = 1
-__method__ = 'median'
+__method__ = 'harmonic_mean'
 
-project_path = os.path.split(os.path.abspath(os.path.dirname(__file__)))[0]
-store_filepath_template = os.path.join(project_path, 'webapp/data/database/gen_{:d}.hdf5')
-result_filepath_template = os.path.join(project_path, 'webapp/data/results/gen_{0:d}_{1}.hdf5')
+webapp_path = os.path.abspath(os.path.dirname(__file__))
+store_filepath_template = os.path.join(webapp_path,
+                                       'data/database/gen_{:d}.hdf5')
+result_filepath_template = os.path.join(webapp_path,
+                                        'data/results/gen_{0:d}_{1}.hdf5')
 
 # must be initialized in init()
 store_filepath = None
 result_filepath = None
 
-def init(GEN=1, METHOD='median'):
+def init(GEN=1, METHOD='harmonic_mean'):
     global __gen__, __method__, store_filepath, result_filepath
 
     __gen__ = int(GEN)

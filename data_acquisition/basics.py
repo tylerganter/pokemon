@@ -13,8 +13,7 @@ import numpy as np
 import pandas as pd
 
 # Local application imports
-import settings
-from context import web_utils
+from context import settings, web_utils
 
 
 def get_poketypes():
@@ -23,6 +22,8 @@ def get_poketypes():
 
     :return:
         tuple: DataFrame, name_of_dataframe (string)
+
+        DataFrame columns=['poketype']
     """
 
     poketypes = [
@@ -59,8 +60,12 @@ def get_poketypes():
 def get_move_categories():
     """
 
+    list of move categories
+
     :return:
         tuple: DataFrame, name_of_dataframe (string)
+
+        DataFrame columns=['category']
     """
 
     move_categories = ['physical', 'special', 'status']
@@ -76,6 +81,8 @@ def get_poketype_chart():
 
     :return:
         tuple: DataFrame, name_of_dataframe (string)
+
+        DataFrame columns=<list of poketypes>
     """
 
     def get_chart_soup():
@@ -154,8 +161,8 @@ def get_poketype_chart():
 
 
 if __name__ == '__main__':
-    GENS = range(1, 7+1)
-    # GENS = [1]
+    # GENS = range(1, 7+1)
+    GENS = [1]
 
     functions = [get_poketypes, get_move_categories, get_poketype_chart]
     # functions = []
