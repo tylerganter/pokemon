@@ -20,4 +20,4 @@ project_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
 sys.path.insert(0, project_path)
 
 from utils import web_utils
-from webapp import settings
+from webapp.scripts import settings

@@ -11,7 +11,8 @@ import numpy as np
 import pandas as pd
 
 # Local application imports
-from context import settings, harmonic_mean
+import settings
+from harmonic_mean import harmonic_mean
 from preparatory import sorted_moves_per_poketype
 from formulas import effective_damage
 import exceptions

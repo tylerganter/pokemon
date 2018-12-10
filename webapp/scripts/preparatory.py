@@ -11,7 +11,7 @@ import numpy as np
 import pandas as pd
 
 # Local application imports
-from context import settings
+import settings
 
 
 def sorted_moves_per_poketype():

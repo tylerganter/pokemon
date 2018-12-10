@@ -12,7 +12,7 @@ import datetime
 import pandas as pd
 
 # Local application imports
-from context import settings
+from scripts import settings
 
 from flask import Flask, render_template
 app = Flask(__name__)

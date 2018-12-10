@@ -9,6 +9,7 @@ __gen__ = 1
 __method__ = 'harmonic_mean'
 
 webapp_path = os.path.abspath(os.path.dirname(__file__))
+webapp_path = os.path.abspath(os.path.join(webapp_path, '..'))
 store_filepath_template = os.path.join(webapp_path,
                                        'data/database/gen_{:d}.hdf5')
 result_filepath_template = os.path.join(webapp_path,

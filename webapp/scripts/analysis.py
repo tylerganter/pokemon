@@ -63,7 +63,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 
 # Local application imports
-from context import settings
+import settings
 
 def get_pokemon(pokedex, name, subname=''):
     pokemons = pokedex[(pokedex['name'] == name)]

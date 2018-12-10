@@ -31,7 +31,7 @@ best average damage given and taken
 
 import numpy as np
 
-from context import settings
+import settings
 
 def from_poketype_chart(poketype_chart, attack_poketype, defending_pokemon):
     attack_row_index = list(poketype_chart.columns).index(attack_poketype)
