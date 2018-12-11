@@ -13,9 +13,8 @@ import pandas as pd
 # Local application imports
 import settings
 from harmonic_mean import harmonic_mean
-from preparatory import sorted_moves_per_poketype
-from formulas import effective_damage
-import exceptions
+from helpers import SortedMoves, effective_damage
+import dex_exceptions
 
 
 def modifier_function(damage, move, attacking_pokemon, defending_pokemon):
@@ -61,15 +60,15 @@ def score_function(mc_vector):
 
     return score
 
-def compute_defense_scores(vectors):
+def compute_defense_scores(damage_matrix):
     """"""
 
-    defense_matrix = vectors.values
+    defense_matrix = damage_matrix.values
 
     if settings.__method__ == 'min':
         defense_vector = np.max(defense_matrix, axis=0)
     elif settings.__method__ == 'mean':
-        defense_vector = np.zeros(vectors.shape[1])
+        defense_vector = np.zeros(damage_matrix.shape[1])
 
         for i in range(len(defense_vector)):
             # skip zeros (situations where the attacker cannot harm the
@@ -77,7 +76,7 @@ def compute_defense_scores(vectors):
             #               Ditto   attacking anyone
             #               Metapod attacking Haunter
             temp = defense_matrix[:, i]
-            temp = temp[temp != 0]
+            temp = temp[temp > 0]
 
             defense_vector[i] = harmonic_mean(temp)
 
@@ -91,12 +90,14 @@ def compute_defense_scores(vectors):
 
     return defense_vector
 
-def add_defense_scores(results, vectors):
-    defense_scores = compute_defense_scores(vectors)
+def add_defense_scores(moves_and_scores, damage_matrix):
+    defense_scores = compute_defense_scores(damage_matrix)
 
-    results['d_score'] = pd.Series(defense_scores, index=results.index)
+    moves_and_scores['d_score'] = pd.Series(defense_scores,
+                                            index=moves_and_scores.index,
+                                            dtype='int16')
 
-    return results
+    return moves_and_scores
 
 def _single_pokemon_pokemon(attacking_pokemon_row, store_data):
     """"""
@@ -106,30 +107,22 @@ def _single_pokemon_pokemon(attacking_pokemon_row, store_data):
 
     attacking_pokemon = pokedex.iloc[attacking_pokemon_row]
 
-    """exceptions..."""
-
-    if attacking_pokemon['name'] in exceptions.attacking_pokemon_exceptions:
-        return exceptions.best_combo_exception, np.zeros(pokedex.shape[0])
-
-    """Strongest attack if each poketype"""
+    """Strongest attack of each poketype"""
 
     def get_best_move_per_poketype(pokemon, pokedex, attackdex, learnsets):
-
-        sorted_moves = sorted_moves_per_poketype()
-
         full_name = '|'.join([pokemon['name'], pokemon['subname']])
 
         cur_pokemon_moves = attackdex[learnsets[full_name]]['name']
 
         best_move_per_poketype = {}
 
-        for poketype, poketype_moves in sorted_moves.items():
+        for poketype, poketype_moves in SortedMoves().sorted_moves.items():
             # moves of specific poketype that this pokemon can learn
             moves = \
                 poketype_moves[poketype_moves['name'].isin(cur_pokemon_moves)]
 
             # omit moves that are on the skip list
-            moves = moves[~moves['name'].isin(exceptions.move_skip_list)]
+            moves = moves[~moves['name'].isin(dex_exceptions.move_skip_list)]
 
             # there are any...
             if moves.shape[0] > 0:
@@ -165,7 +158,7 @@ def _single_pokemon_pokemon(attacking_pokemon_row, store_data):
     """Find 4 rows that maximize the sum across columns"""
 
     best_combo = None
-    _saved_mc_vector = None
+    best_damage_vector = None
 
     for combo in combinations(range(len(poketypes)), min(len(poketypes), 4)):
         # acquire the subset for this combo of attack types
@@ -181,56 +174,78 @@ def _single_pokemon_pokemon(attacking_pokemon_row, store_data):
             move_names = [best_move_per_poketype[poketype]['name']
                           for poketype in move_poketypes]
 
-            # extra blank/empty moves due to the pokemon only being capable
-            # of less than 4 move types
-            num_extra = max(4 - len(move_poketypes), 0)
-
             best_combo = {
                 'a_score': score,
-                'move_poketypes': move_poketypes + [''] * num_extra,
-                'move_names': move_names + [''] * num_extra
+                'move_names': move_names
             }
-            _saved_mc_vector = max_combo_vector
+            best_damage_vector = max_combo_vector
 
-    return best_combo, _saved_mc_vector
+    best_moves_and_scores = -1 * np.ones(6, dtype='int16')
+    for idx, move_name in enumerate(best_combo['move_names']):
+        move_index = attackdex.index[attackdex['name'] == move_name].tolist()[0]
+        best_moves_and_scores[idx] = move_index
+    best_moves_and_scores[4] = best_combo['a_score']
+
+    best_damage_vector = np.round(best_damage_vector).astype('int16')
+
+    return best_moves_and_scores, best_damage_vector
 
 def pokemon_pokemon(overwrite=False, start_idx=0, end_idx=np.inf):
     """
     best A pokemon for all D pokemon
       4 Attacks & Pokemon, Pokemon
     """
-    col_names = ['pokemon', 'subname',
-                 'move1', 'move2', 'move3', 'move4',
-                 'a_score']
+    def load_database():
+        with pd.HDFStore(settings.store_filepath, mode='r') as store:
+            # poketypes = store['poketypes']
+            # move_categories = store['move_categories']
+            poketype_chart = store['poketype_chart']
+            pokedex = store['pokedex']
+            attackdex = store['attackdex']
+            learnsets = store['learnsets']
 
-    if overwrite or not os.path.exists(settings.result_filepath):
-        results = []
-        vectors = []
-        num_processed = 0
-    else:
-        with pd.HDFStore(settings.result_filepath, mode='r') as store:
-            stored_result = store['result']
-            stored_vectors = store['vectors']
-            num_processed = stored_result.shape[0]
-            results = list(stored_result.values[:, :len(col_names)])
-            vectors = list(stored_vectors.values)
+            database = {
+                'poketype_chart': poketype_chart,
+                'pokedex': pokedex,
+                'attackdex': attackdex,
+                'learnsets': learnsets
+            }
 
-    with pd.HDFStore(settings.store_filepath, mode='r') as store:
-        # poketypes = store['poketypes']
-        # move_categories = store['move_categories']
-        poketype_chart = store['poketype_chart']
-        pokedex = store['pokedex']
-        attackdex = store['attackdex']
-        learnsets = store['learnsets']
+        return database
 
-        store_data = {
-            'poketype_chart': poketype_chart,
-            'pokedex': pokedex,
-            'attackdex': attackdex,
-            'learnsets': learnsets
-        }
+    def load_results(overwrite, database):
+        """initialize or load the results"""
 
-    full_pokemon_names = pokedex['name'] + pokedex['subname']
+        if overwrite or not os.path.exists(settings.result_filepath):
+            num_pokemon = database['pokedex'].shape[0]
+
+            col_names = ['move1', 'move2', 'move3', 'move4',
+                         'a_score', 'd_score']
+            moves_and_scores = -1 * np.ones((num_pokemon, len(col_names)),
+                                            dtype='int16')
+            moves_and_scores = pd.DataFrame(moves_and_scores, columns=col_names)
+
+            full_pokemon_names = pokedex['name']
+            for index, subname in enumerate(pokedex['subname']):
+                if len(subname) > 0:
+                    full_pokemon_names.iloc[index] = \
+                        full_pokemon_names.iloc[index] + '-' + subname
+
+            damage_matrix = np.zeros((num_pokemon, num_pokemon), dtype='int16')
+            damage_matrix = pd.DataFrame(damage_matrix,
+                                         columns=full_pokemon_names)
+        else:
+            with pd.HDFStore(settings.result_filepath, mode='r') as store:
+                moves_and_scores = store['moves_and_scores']
+                damage_matrix = store['damage_matrix']
+
+        return moves_and_scores, damage_matrix
+
+    database = load_database()
+    pokedex = database['pokedex']
+
+    moves_and_scores, damage_matrix = load_results(overwrite=overwrite,
+                                                   database=database)
 
     for index, pokemon in pokedex.iterrows():
         if index < start_idx:
@@ -238,60 +253,55 @@ def pokemon_pokemon(overwrite=False, start_idx=0, end_idx=np.inf):
         if index > end_idx:
             break
 
-        if not overwrite and index < num_processed:
+        if not overwrite and (moves_and_scores.iloc[index, 0] != -1):
             continue
 
-        full_name = '|'.join([pokemon['name'], pokemon['subname']])
+        # exceptions...
+        if pokemon['name'] in dex_exceptions.attacking_pokemon_exceptions:
+            continue
+
         print('processing: %3d/%3d - %s' % (index, pokedex.shape[0],
-                                            full_name))
+                                            damage_matrix.columns[index]))
 
-        best_combo, _saved_mc_vector \
-            = _single_pokemon_pokemon(index, store_data)
+        row_moves_and_scores, damage_vector \
+            = _single_pokemon_pokemon(index, database)
 
-        cur_result = [pokemon['name'], pokemon['subname']] \
-                     + best_combo['move_names'] \
-                     + [best_combo['a_score']]
-
-        results.append(cur_result)
-        vectors.append(_saved_mc_vector)
+        moves_and_scores.iloc[index] = row_moves_and_scores
+        damage_matrix.iloc[index] = damage_vector
 
         with pd.HDFStore(settings.result_filepath, mode='a') as store:
-            store['result'] = pd.DataFrame(results, columns=col_names)
-            store['vectors'] = pd.DataFrame(vectors, columns=full_pokemon_names)
+            store['moves_and_scores'] = moves_and_scores.astype('int16')
+            store['damage_matrix'] = damage_matrix.astype('int16')
 
     """Add defense scores to results"""
 
-    results_df = pd.DataFrame(results, columns=col_names)
-    vectors_df = pd.DataFrame(vectors, columns=full_pokemon_names)
-
     with pd.HDFStore(settings.result_filepath, mode='a') as store:
-        store['result'] = add_defense_scores(results_df, vectors_df)
+        store['moves_and_scores'] = add_defense_scores(moves_and_scores,
+                                                       damage_matrix).astype('int16')
 
-    return results_df, vectors_df
+    """Reload results from store"""
+
+    with pd.HDFStore(settings.result_filepath, mode='r') as store:
+        moves_and_scores = store['moves_and_scores']
+        damage_matrix = store['damage_matrix']
+
+    return moves_and_scores, damage_matrix
 
 
 if __name__ == '__main__':
     # METHOD = 'mean'
-    # METHOD = 'median'
-    METHOD = 'harmonic_mean'
+    METHOD = 'median'
+    # METHOD = 'harmonic_mean'
     # METHOD = 'min'
 
-    settings.init(GEN=7, METHOD=METHOD)
+    settings.init(GEN=1, METHOD=METHOD)
 
     start_idx = 0
     end_idx = 1000
 
-    results, vectors = pokemon_pokemon(overwrite=False,
-                                       start_idx=start_idx, end_idx=end_idx)
+    moves_and_scores, damage_matrix = pokemon_pokemon(overwrite=False,
+                                                      start_idx=start_idx,
+                                                      end_idx=end_idx)
 
-    """Attack Result"""
-
-    results = results.sort_values(by=['a_score'], ascending=False)
-    results = results.reset_index(drop=True)
-    print(results.head(n=10))
-
-    """Defense Result"""
-
-    results = results.sort_values(by=['d_score'])
-    results = results.reset_index(drop=True)
-    print(results.head(n=10))
+    print(moves_and_scores.head())
+    print(damage_matrix.head())

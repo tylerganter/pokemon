@@ -65,6 +65,7 @@ import matplotlib.pyplot as plt
 # Local application imports
 import settings
 
+
 def get_pokemon(pokedex, name, subname=''):
     pokemons = pokedex[(pokedex['name'] == name)]
     return pokemons[(pokemons['subname'] == subname)].iloc[0]
@@ -72,48 +73,57 @@ def get_pokemon(pokedex, name, subname=''):
 def get_move(attackdex, name):
     return attackdex[attackdex['name'] == name].iloc[0]
 
-def add_ad_score(results):
-    # ad_score = results['a_score'] - results['d_score']
-    ad_score = results['a_score'] / results['d_score']
+def add_ad_score(moves_and_scores):
+    # ad_score = moves_and_scores['a_score'] - moves_and_scores['d_score']
+    ad_score = moves_and_scores['a_score'] / moves_and_scores['d_score']
 
-    results['ad_score'] = pd.Series(ad_score, index=results.index)
+    moves_and_scores['ad_score'] = pd.Series(ad_score, index=moves_and_scores.index)
 
-    return results
+    return moves_and_scores
 
-def add_best_worst(results):
-    full_pokemon_names = results['pokemon'] + results['subname']
+def add_best_worst(mas, damage_matrix):
+    """
 
-    # temp = full_pokemon_names[np.argmax(vectors.values, axis=1)].values
-    # results['+A name'] = pd.Series(temp, index=results.index)
-    # temp = np.max(vectors.values, axis=1)
-    # results['+A'] = pd.Series(temp, index=results.index).round(decimals=1)
-    temp = full_pokemon_names[np.argmin(vectors.values, axis=1)].values
-    results['-A name'] = pd.Series(temp, index=results.index)
-    temp = np.min(vectors.values, axis=1)
-    results['-A'] = pd.Series(temp, index=results.index).round(decimals=1)
-    temp = full_pokemon_names[np.argmax(vectors.values, axis=0)].values
-    results['-D name'] = pd.Series(temp, index=results.index)
-    temp = np.max(vectors.values, axis=0)
-    results['-D'] = pd.Series(temp, index=results.index).round(decimals=1)
-    # temp = full_pokemon_names[np.argmin(vectors.values, axis=0)].values
-    # results['+D name'] = pd.Series(temp, index=results.index)
-    # temp = np.min(vectors.values, axis=0)
-    # results['+D'] = pd.Series(temp, index=results.index).round(decimals=1)
+    :param mas: Moves And Scores
+    :param damage_matrix:
+    :return:
+    """
+    full_pokemon_names = mas['fullname']
 
-    return results
+    # temp = full_pokemon_names[np.argmax(damage_matrix.values, axis=1)].values
+    # mas['+A name'] = pd.Series(temp, index=mas.index)
+    # temp = np.max(damage_matrix.values, axis=1)
+    # mas['+A'] = pd.Series(temp, index=mas.index).round(decimals=1)
 
-def plot_matrix(results, vectors, N=10):
-    full_pokemon_names = np.array(results['pokemon'] + results['subname'])
+    temp = full_pokemon_names[np.argmin(damage_matrix.values, axis=1)].values
+    mas['-A name'] = pd.Series(temp, index=mas.index)
+    temp = np.min(damage_matrix.values, axis=1)
+    mas['-A'] = pd.Series(temp, index=mas.index).round(decimals=1)
 
-    z = vectors.values
+    temp = full_pokemon_names[np.argmax(damage_matrix.values, axis=0)].values
+    mas['-D name'] = pd.Series(temp, index=damage_matrix.index)
+    temp = np.max(damage_matrix.values, axis=0)
+    mas['-D'] = pd.Series(temp, index=damage_matrix.index).round(decimals=1)
+
+    # temp = full_pokemon_names[np.argmin(damage_matrix.values, axis=0)].values
+    # mas['+D name'] = pd.Series(temp, index=mas.index)
+    # temp = np.min(damage_matrix.values, axis=0)
+    # mas['+D'] = pd.Series(temp, index=mas.index).round(decimals=1)
+
+    return mas
+
+def plot_matrix(mas, damage_matrix, N=10):
+    full_pokemon_names = np.array(mas['fullname'])
+
+    z = damage_matrix.values
     xticks = full_pokemon_names
     yticks = full_pokemon_names
 
-    # attack_indices = (-np.array(results['a_score'])).argsort()
-    # defense_indices = np.array(results['d_score']).argsort()
+    # attack_indices = (-np.array(mas['a_score'])).argsort()
+    # defense_indices = np.array(mas['d_score']).argsort()
 
     attack_indices = defense_indices = \
-            (-np.array(results['ad_score'])).argsort()
+            (-np.array(mas['ad_score'])).argsort()
 
     z = z[attack_indices, :]
     z = z[:, defense_indices]
@@ -124,6 +134,7 @@ def plot_matrix(results, vectors, N=10):
     z = np.log(z)
 
     plt.imshow(z, cmap=plt.get_cmap('RdYlGn'))
+    # plt.imshow(-z, cmap=plt.get_cmap('afmhot'))
 
     plt.xticks(range(z.shape[1]), xticks[:z.shape[1]], rotation=45)
     plt.yticks(range(z.shape[1]), yticks[:z.shape[1]], rotation=45)
@@ -131,14 +142,10 @@ def plot_matrix(results, vectors, N=10):
     plt.xlabel('Defending Pokemon')
     plt.ylabel('Attacking Pokemon')
 
-def hist_a_pokemon(results, vectors, IDX=0, nbins=30):
-    pokemon = results.iloc[IDX]
-    attack_vector = vectors.values[IDX, :]
-    defense_vector = vectors.values[:, IDX]
-
-    full_name = pokemon['pokemon']
-    if pokemon['subname'] != '':
-        full_name += '-' + pokemon['subname']
+def hist_a_pokemon(mas, damage_matrix, IDX=0, nbins=30):
+    pokemon = mas.iloc[IDX]
+    attack_vector = damage_matrix.values[IDX, :]
+    defense_vector = damage_matrix.values[:, IDX]
 
     ratio_vector = attack_vector[defense_vector != 0] \
                    / defense_vector[defense_vector != 0]
@@ -149,7 +156,7 @@ def hist_a_pokemon(results, vectors, IDX=0, nbins=30):
     plt.xscale('log')
     plt.hist(attack_vector, bins=bins)
     plt.ylabel('damage dealt')
-    plt.title(full_name)
+    plt.title(pokemon['fullname'])
 
     plt.subplot(3, 1, 2)
     bins = np.exp((np.linspace(np.log(30),
@@ -174,54 +181,70 @@ if __name__ == '__main__':
     METHOD = 'harmonic_mean'
     # METHOD = 'min'
 
-    settings.init(GEN=2, METHOD=METHOD)
+    settings.init(GEN=1, METHOD=METHOD)
 
     # number of top pokemon to show
     N = 10
 
     """Load Data"""
 
+    with pd.HDFStore(settings.store_filepath, mode='r') as store:
+        # poketypes = store['poketypes']
+        # move_categories = store['move_categories']
+        # poketype_chart = store['poketype_chart']
+        pokedex = store['pokedex']
+        attackdex = store['attackdex']
+        # learnsets = store['learnsets']
+
     with pd.HDFStore(settings.result_filepath, mode='r') as store:
-        results = store['result']
-        vectors = store['vectors']
+        moves_and_scores = store['moves_and_scores']
+        damage_matrix = store['damage_matrix']
 
-    # with pd.HDFStore(settings.store_filepath, mode='r') as store:
-    #     # poketypes = store['poketypes']
-    #     # move_categories = store['move_categories']
-    #     poketype_chart = store['poketype_chart']
-    #     pokedex = store['pokedex']
-    #     attackdex = store['attackdex']
-    #     learnsets = store['learnsets']
+    """Modify/expand the condensed results"""
 
-    """find attack - defense score"""
+    def modify_moves_and_scores(moves_and_scores, pokedex, attackdex):
+        full_pokemon_names = pokedex['name']
+        for index, subname in enumerate(pokedex['subname']):
+            if len(subname) > 0:
+                full_pokemon_names.iloc[index] = \
+                    full_pokemon_names.iloc[index] + '-' + subname
+        moves_and_scores.insert(0, 'fullname', full_pokemon_names)
 
-    results = add_ad_score(results)
+        for idx in range(4):
+            move_name = 'move%d' % (idx + 1)
+            temp = attackdex['name'].iloc[moves_and_scores[move_name]]
+            temp[list(moves_and_scores[move_name] < 0)] = '-'
+
+            moves_and_scores[move_name] = temp.tolist()
+
+        return moves_and_scores
+
+    moves_and_scores = modify_moves_and_scores(moves_and_scores,
+                                               pokedex, attackdex)
+
+    """find attack / defense score"""
+
+    moves_and_scores = add_ad_score(moves_and_scores)
 
     """find best/worst attack and defense values (and pokemon)"""
 
-    results = add_best_worst(results)
-
-    """round"""
-
-    results['a_score'] = results['a_score'].round(decimals=1)
-    results['d_score'] = results['d_score'].round(decimals=1)
-    results['ad_score'] = results['ad_score'].round(decimals=1)
+    moves_and_scores = add_best_worst(moves_and_scores, damage_matrix)
 
     """Attack Result"""
 
-    # attack_results = results.sort_values(by=['a_score'], ascending=False)
+    # attack_results = moves_and_scores.sort_values(by=['a_score'], ascending=False)
     # attack_results = attack_results.reset_index(drop=True)
     # print(attack_results.head(n=N))
 
     """Defense Result"""
 
-    # defense_results = results.sort_values(by=['d_score'])
+    # defense_results = moves_and_scores.sort_values(by=['d_score'])
     # defense_results = defense_results.reset_index(drop=True)
     # print(defense_results.head(n=N))
 
     """Combined Result"""
 
-    combined_results = results.sort_values(by=['ad_score'], ascending=False)
+    combined_results = moves_and_scores.sort_values(by=['ad_score'], ascending=False)
     combined_results = combined_results.reset_index(drop=True)
     print(combined_results.head(n=N))
 
@@ -233,23 +256,23 @@ if __name__ == '__main__':
     #     'Sceptile', 'Blaziken', 'Swampert'
     # ]
     # indices = [i for i in range(combined_results.shape[0])
-    #            if combined_results.iloc[i]['pokemon'] in starters]
+    #            if combined_results.iloc[i]['fullname'] in starters]
     # print(combined_results.iloc[indices])
 
     """Grid Image"""
 
     plt.figure()
-    plot_matrix(results, vectors, N=N)
+    plot_matrix(moves_and_scores, damage_matrix, N=N)
     # plt.show()
 
     """Histograms"""
 
-    sorted_idx = list(results.sort_values(by=['ad_score'],
-                                          ascending=False).index)
+    sorted_idx = list(moves_and_scores.sort_values(by=['ad_score'],
+                                                   ascending=False).index)
     IDX = sorted_idx[0]
 
-    plt.figure()
-    hist_a_pokemon(results, vectors, IDX=IDX, nbins=30)
+    # plt.figure()
+    # hist_a_pokemon(moves_and_scores, damage_matrix, IDX=IDX, nbins=30)
     plt.show()
 
     """Moves by sorted by occurrence"""

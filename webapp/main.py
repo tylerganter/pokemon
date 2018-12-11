@@ -5,6 +5,9 @@ http://flask.pocoo.org/docs/1.0/tutorial/database/
 
 """
 
+# TODO CONTINUE HERE - test the VM and deploy
+# TODO clean up scripts directory and save space efficient dataframes
+
 # Standard library imports
 import datetime
 
@@ -18,7 +21,6 @@ from flask import Flask, render_template
 app = Flask(__name__)
 
 @app.route('/')
-# @app.route('/<var>')
 def home():
     load_time = datetime.datetime.now()
 

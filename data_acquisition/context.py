@@ -17,7 +17,8 @@ import sys
 
 # Local application imports
 project_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
-sys.path.insert(0, project_path)
+# sys.path.insert(0, project_path)
+sys.path.append(project_path)
 
 from utils import web_utils
 from webapp.scripts import settings
