@@ -95,7 +95,7 @@ def add_defense_scores(moves_and_scores, damage_matrix):
 
     moves_and_scores['d_score'] = pd.Series(defense_scores,
                                             index=moves_and_scores.index,
-                                            dtype='int16')
+                                            dtype='int32')
 
     return moves_and_scores
 
@@ -180,13 +180,13 @@ def _single_pokemon_pokemon(attacking_pokemon_row, store_data):
             }
             best_damage_vector = max_combo_vector
 
-    best_moves_and_scores = -1 * np.ones(6, dtype='int16')
+    best_moves_and_scores = -1 * np.ones(6, dtype='int32')
     for idx, move_name in enumerate(best_combo['move_names']):
         move_index = attackdex.index[attackdex['name'] == move_name].tolist()[0]
         best_moves_and_scores[idx] = move_index
     best_moves_and_scores[4] = best_combo['a_score']
 
-    best_damage_vector = np.round(best_damage_vector).astype('int16')
+    best_damage_vector = np.round(best_damage_vector).astype('int32')
 
     return best_moves_and_scores, best_damage_vector
 
@@ -222,7 +222,7 @@ def pokemon_pokemon(overwrite=False, start_idx=0, end_idx=np.inf):
             col_names = ['move1', 'move2', 'move3', 'move4',
                          'a_score', 'd_score']
             moves_and_scores = -1 * np.ones((num_pokemon, len(col_names)),
-                                            dtype='int16')
+                                            dtype='int32')
             moves_and_scores = pd.DataFrame(moves_and_scores, columns=col_names)
 
             full_pokemon_names = pokedex['name']
@@ -231,7 +231,7 @@ def pokemon_pokemon(overwrite=False, start_idx=0, end_idx=np.inf):
                     full_pokemon_names.iloc[index] = \
                         full_pokemon_names.iloc[index] + '-' + subname
 
-            damage_matrix = np.zeros((num_pokemon, num_pokemon), dtype='int16')
+            damage_matrix = np.zeros((num_pokemon, num_pokemon), dtype='int32')
             damage_matrix = pd.DataFrame(damage_matrix,
                                          columns=full_pokemon_names)
         else:
@@ -269,15 +269,15 @@ def pokemon_pokemon(overwrite=False, start_idx=0, end_idx=np.inf):
         moves_and_scores.iloc[index] = row_moves_and_scores
         damage_matrix.iloc[index] = damage_vector
 
-        # with pd.HDFStore(settings.result_filepath, mode='a') as store:
-        #     store['moves_and_scores'] = moves_and_scores.astype('int16')
-        #     store['damage_matrix'] = damage_matrix.astype('int16')
+        with pd.HDFStore(settings.result_filepath, mode='a') as store:
+            store['moves_and_scores'] = moves_and_scores.astype('int32')
+            store['damage_matrix'] = damage_matrix.astype('int32')
 
     """Add defense scores to results"""
 
-    damage_matrix = damage_matrix.astype('int16')
+    damage_matrix = damage_matrix.astype('int32')
     moves_and_scores = add_defense_scores(moves_and_scores,
-                                          damage_matrix).astype('int16')
+                                          damage_matrix).astype('int32')
 
     """Write the results"""
 
@@ -294,12 +294,12 @@ if __name__ == '__main__':
     METHOD = 'harmonic_mean'
     # METHOD = 'min'
 
-    settings.init(GEN=3, METHOD=METHOD)
+    settings.init(GEN=4, METHOD=METHOD)
 
     start_idx = 0
     end_idx = 1000
 
-    moves_and_scores, damage_matrix = pokemon_pokemon(overwrite=False,
+    moves_and_scores, damage_matrix = pokemon_pokemon(overwrite=True,
                                                       start_idx=start_idx,
                                                       end_idx=end_idx)
 
