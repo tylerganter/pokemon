@@ -60,7 +60,8 @@ Best Starter
 # Third party imports
 import numpy as np
 import pandas as pd
-import matplotlib.pyplot as plt
+# TODO make this work in the venv "matplotlib in virtualenv"
+# import matplotlib.pyplot as plt
 
 # Local application imports
 import settings
@@ -94,7 +95,7 @@ def add_ad_score(moves_and_scores):
     # ad_score = moves_and_scores['a_score'] - moves_and_scores['d_score']
     ad_score = moves_and_scores['a_score'] / moves_and_scores['d_score']
 
-    moves_and_scores['ad_score'] = pd.Series(ad_score, index=moves_and_scores.index)
+    moves_and_scores['ad_score'] = pd.Series(ad_score, index=moves_and_scores.index).round(decimals=2)
 
     return moves_and_scores
 

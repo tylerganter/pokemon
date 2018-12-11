@@ -15,7 +15,7 @@ import pandas as pd
 from context import settings
 
 if __name__ == '__main__':
-    settings.init(GEN=2)
+    settings.init(GEN=3)
 
     with pd.HDFStore(settings.store_filepath, mode='r') as store:
         print(store.keys())
@@ -32,6 +32,8 @@ if __name__ == '__main__':
 
         # print(store['learnsets'].head())
         # print(store['learnsets'].tail())
+
+        print(store['pokedex'].iloc[351])
 
         """Assign to variables"""
 

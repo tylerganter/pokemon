@@ -225,7 +225,7 @@ def pokemon_pokemon(overwrite=False, start_idx=0, end_idx=np.inf):
                                             dtype='int32')
             moves_and_scores = pd.DataFrame(moves_and_scores, columns=col_names)
 
-            full_pokemon_names = pokedex['name']
+            full_pokemon_names = pokedex['name'].copy()
             for index, subname in enumerate(pokedex['subname']):
                 if len(subname) > 0:
                     full_pokemon_names.iloc[index] = \
