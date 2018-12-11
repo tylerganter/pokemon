@@ -6,16 +6,18 @@ http://flask.pocoo.org/docs/1.0/tutorial/database/
 """
 
 # TODO CONTINUE HERE - test the VM and deploy
-# TODO clean up scripts directory and save space efficient dataframes
 
 # Standard library imports
+import os
+import sys
 import datetime
 
 # Third party imports
-import pandas as pd
+# import pandas as pd
 
 # Local application imports
-from scripts import settings
+sys.path.append(os.path.abspath("./scripts"))
+import settings, analysis
 
 from flask import Flask, render_template
 app = Flask(__name__)
@@ -32,26 +34,44 @@ def attack(gen=None, result_table=None):
     if gen is not None:
         settings.init(GEN=gen, METHOD='harmonic_mean')
 
-        N = 10
+        moves_and_scores, damage_matrix = analysis.load_results()
 
-        with pd.HDFStore(settings.result_filepath, mode='r') as store:
-            results = store['result']
-            vectors = store['vectors']
+        moves_and_scores = moves_and_scores.sort_values(by=['a_score'], ascending=False)
+        moves_and_scores = moves_and_scores.reset_index(drop=True)
 
-        # results = results.head()
-        result_table = results.to_html()
+        result_table = moves_and_scores.to_html()
 
     return render_template('attack.html', gen=gen, result_table=result_table)
 
 @app.route('/defense')
 @app.route('/defense/<gen>')
-def defense(gen=None):
-    return render_template('defense.html', gen=gen)
+def defense(gen=None, result_table=None):
+    if gen is not None:
+        settings.init(GEN=gen, METHOD='harmonic_mean')
+
+        moves_and_scores, damage_matrix = analysis.load_results()
+
+        moves_and_scores = moves_and_scores.sort_values(by=['d_score'])
+        moves_and_scores = moves_and_scores.reset_index(drop=True)
+
+        result_table = moves_and_scores.to_html()
+
+    return render_template('defense.html', gen=gen, result_table=result_table)
 
 @app.route('/combined')
 @app.route('/combined/<gen>')
-def combined(gen=None):
-    return render_template('combined.html', gen=gen)
+def combined(gen=None, result_table=None):
+    if gen is not None:
+        settings.init(GEN=gen, METHOD='harmonic_mean')
+
+        moves_and_scores, damage_matrix = analysis.load_results()
+
+        moves_and_scores = moves_and_scores.sort_values(by=['ad_score'], ascending=False)
+        moves_and_scores = moves_and_scores.reset_index(drop=True)
+
+        result_table = moves_and_scores.to_html()
+
+    return render_template('combined.html', gen=gen, result_table=result_table)
 
 
 if __name__ == '__main__':

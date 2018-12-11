@@ -269,32 +269,32 @@ def pokemon_pokemon(overwrite=False, start_idx=0, end_idx=np.inf):
         moves_and_scores.iloc[index] = row_moves_and_scores
         damage_matrix.iloc[index] = damage_vector
 
-        with pd.HDFStore(settings.result_filepath, mode='a') as store:
-            store['moves_and_scores'] = moves_and_scores.astype('int16')
-            store['damage_matrix'] = damage_matrix.astype('int16')
+        # with pd.HDFStore(settings.result_filepath, mode='a') as store:
+        #     store['moves_and_scores'] = moves_and_scores.astype('int16')
+        #     store['damage_matrix'] = damage_matrix.astype('int16')
 
     """Add defense scores to results"""
 
+    damage_matrix = damage_matrix.astype('int16')
+    moves_and_scores = add_defense_scores(moves_and_scores,
+                                          damage_matrix).astype('int16')
+
+    """Write the results"""
+
     with pd.HDFStore(settings.result_filepath, mode='a') as store:
-        store['moves_and_scores'] = add_defense_scores(moves_and_scores,
-                                                       damage_matrix).astype('int16')
-
-    """Reload results from store"""
-
-    with pd.HDFStore(settings.result_filepath, mode='r') as store:
-        moves_and_scores = store['moves_and_scores']
-        damage_matrix = store['damage_matrix']
+        store['moves_and_scores'] = moves_and_scores
+        store['damage_matrix'] = damage_matrix
 
     return moves_and_scores, damage_matrix
 
 
 if __name__ == '__main__':
     # METHOD = 'mean'
-    METHOD = 'median'
-    # METHOD = 'harmonic_mean'
+    # METHOD = 'median'
+    METHOD = 'harmonic_mean'
     # METHOD = 'min'
 
-    settings.init(GEN=1, METHOD=METHOD)
+    settings.init(GEN=3, METHOD=METHOD)
 
     start_idx = 0
     end_idx = 1000

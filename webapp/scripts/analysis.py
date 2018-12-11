@@ -73,6 +73,23 @@ def get_pokemon(pokedex, name, subname=''):
 def get_move(attackdex, name):
     return attackdex[attackdex['name'] == name].iloc[0]
 
+def modify_moves_and_scores(moves_and_scores, pokedex, attackdex):
+    full_pokemon_names = pokedex['name']
+    for index, subname in enumerate(pokedex['subname']):
+        if len(subname) > 0:
+            full_pokemon_names.iloc[index] = \
+                full_pokemon_names.iloc[index] + '-' + subname
+    moves_and_scores.insert(0, 'fullname', full_pokemon_names)
+
+    for idx in range(4):
+        move_name = 'move%d' % (idx + 1)
+        temp = attackdex['name'].iloc[moves_and_scores[move_name]]
+        temp[list(moves_and_scores[move_name] < 0)] = '-'
+
+        moves_and_scores[move_name] = temp.tolist()
+
+    return moves_and_scores
+
 def add_ad_score(moves_and_scores):
     # ad_score = moves_and_scores['a_score'] - moves_and_scores['d_score']
     ad_score = moves_and_scores['a_score'] / moves_and_scores['d_score']
@@ -111,6 +128,34 @@ def add_best_worst(mas, damage_matrix):
     # mas['+D'] = pd.Series(temp, index=mas.index).round(decimals=1)
 
     return mas
+
+def load_results():
+    with pd.HDFStore(settings.store_filepath, mode='r') as store:
+        # poketypes = store['poketypes']
+        # move_categories = store['move_categories']
+        # poketype_chart = store['poketype_chart']
+        pokedex = store['pokedex']
+        attackdex = store['attackdex']
+        # learnsets = store['learnsets']
+
+    with pd.HDFStore(settings.result_filepath, mode='r') as store:
+        moves_and_scores = store['moves_and_scores']
+        damage_matrix = store['damage_matrix']
+
+    """Modify/expand the condensed results"""
+
+    moves_and_scores = modify_moves_and_scores(moves_and_scores,
+                                               pokedex, attackdex)
+
+    """find attack / defense score"""
+
+    moves_and_scores = add_ad_score(moves_and_scores)
+
+    """find best/worst attack and defense values (and pokemon)"""
+
+    moves_and_scores = add_best_worst(moves_and_scores, damage_matrix)
+
+    return moves_and_scores, damage_matrix
 
 def plot_matrix(mas, damage_matrix, N=10):
     full_pokemon_names = np.array(mas['fullname'])
@@ -188,47 +233,7 @@ if __name__ == '__main__':
 
     """Load Data"""
 
-    with pd.HDFStore(settings.store_filepath, mode='r') as store:
-        # poketypes = store['poketypes']
-        # move_categories = store['move_categories']
-        # poketype_chart = store['poketype_chart']
-        pokedex = store['pokedex']
-        attackdex = store['attackdex']
-        # learnsets = store['learnsets']
-
-    with pd.HDFStore(settings.result_filepath, mode='r') as store:
-        moves_and_scores = store['moves_and_scores']
-        damage_matrix = store['damage_matrix']
-
-    """Modify/expand the condensed results"""
-
-    def modify_moves_and_scores(moves_and_scores, pokedex, attackdex):
-        full_pokemon_names = pokedex['name']
-        for index, subname in enumerate(pokedex['subname']):
-            if len(subname) > 0:
-                full_pokemon_names.iloc[index] = \
-                    full_pokemon_names.iloc[index] + '-' + subname
-        moves_and_scores.insert(0, 'fullname', full_pokemon_names)
-
-        for idx in range(4):
-            move_name = 'move%d' % (idx + 1)
-            temp = attackdex['name'].iloc[moves_and_scores[move_name]]
-            temp[list(moves_and_scores[move_name] < 0)] = '-'
-
-            moves_and_scores[move_name] = temp.tolist()
-
-        return moves_and_scores
-
-    moves_and_scores = modify_moves_and_scores(moves_and_scores,
-                                               pokedex, attackdex)
-
-    """find attack / defense score"""
-
-    moves_and_scores = add_ad_score(moves_and_scores)
-
-    """find best/worst attack and defense values (and pokemon)"""
-
-    moves_and_scores = add_best_worst(moves_and_scores, damage_matrix)
+    moves_and_scores, damage_matrix = load_results()
 
     """Attack Result"""
 
@@ -271,8 +276,8 @@ if __name__ == '__main__':
                                                    ascending=False).index)
     IDX = sorted_idx[0]
 
-    # plt.figure()
-    # hist_a_pokemon(moves_and_scores, damage_matrix, IDX=IDX, nbins=30)
+    plt.figure()
+    hist_a_pokemon(moves_and_scores, damage_matrix, IDX=IDX, nbins=30)
     plt.show()
 
-    """Moves by sorted by occurrence"""
+    """Moves sorted by occurrence"""
