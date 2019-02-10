@@ -26,7 +26,7 @@ python main.py
 # Deploying to Google App Engine
 ##################################
 
-# create the app (skip this??)
+# create the app (If you already created an app, you can skip this step)
 gcloud app create
 
 # deploy the app
