@@ -1,0 +1,8 @@
+# Project Requirements (not used in web app)
+requests
+beautifulsoup4
+# Pokemon Web App (or both)
+Flask
+Numpy
+Pandas
+pymysql

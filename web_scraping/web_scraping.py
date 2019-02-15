@@ -1,34 +1,28 @@
 #!/usr/bin/env python
 """
 
-Web Service API: request from a webpage to get info (may need authorization key)
+Web Service API: request from a webpage to get info
+(may need authorization key)
 
 """
 import sys
 from abc import ABCMeta, abstractmethod
-from bs4 import BeautifulSoup   # provides a simple way for searching an HTML document
-import requests                 # allows you to easily perform web requests
 from urlparse import urlsplit
-from collections import deque
 import re
+from collections import deque
 
-# from lxml import html, etree
-# import json
+from bs4 import BeautifulSoup
+import requests
 
-# TODO Scrapy web scraper framework
 
-# # Ignore SSL certificate errors
-# import ssl
-# ctx = ssl.create_default_context()
-# ctx.check_hostname = False
-# ctx.verify_mode = ssl.CERT_NONE
-
-class _CrawlerProcessor:
+class _CrawlerProcessor():
     __metaclass__ = ABCMeta
 
     @abstractmethod
     def process(self, page):
+        '''asdf'''
         pass
+
 
 class GetLinks(_CrawlerProcessor):
     def __init__(self):
@@ -40,15 +34,19 @@ class GetLinks(_CrawlerProcessor):
         for new_link in new_links:
             self.links.add(new_link)
 
+
 class GetEmailAddresses(_CrawlerProcessor):
     def __init__(self):
         self.email_addresses = set()
 
     def process(self, page):
-        new_email_addresses = re.findall(r"[a-z0-9\.\-+_]+@[a-z0-9\.\-+_]+\.[a-z]+", page.text, re.I)
+        new_email_addresses = re.findall(
+            r"[a-z0-9\.\-+_]+@[a-z0-9\.\-+_]+\.[a-z]+", page.text, re.I
+        )
 
         for new_email_address in new_email_addresses:
             self.email_addresses.add(new_email_address)
+
 
 def crawl(initial_url, processor=None, max_num_links=1, same_base=1):
     """
@@ -148,8 +146,6 @@ def crawl(initial_url, processor=None, max_num_links=1, same_base=1):
 
 
 if __name__ == '__main__':
-    # url = 'https://www.voxel51.com/'
-    # url = 'https://www.sandia.gov/contact_us/index.html'
     # url = 'https://www.ableton.com/'
     # url = 'https://www.ableton.com/en/contact-us/'
 
@@ -160,7 +156,7 @@ if __name__ == '__main__':
 
     # url = 'www.python.org/'
 
-    url = 'https://www.python.org/'
+    TESTURL = 'https://www.python.org/'
     # url = 'https://docs.python.org/3/'
 
     # get_links = GetLinks()
@@ -170,7 +166,10 @@ if __name__ == '__main__':
     #     print(link)
 
     get_email_addresses = GetEmailAddresses()
-    crawl(url, processor=get_email_addresses, max_num_links=10, same_base=1)
+    crawl(TESTURL,
+          processor=get_email_addresses,
+          max_num_links=10, same_base=1)
+
     print('\nResults:')
     for email in get_email_addresses.email_addresses:
         print(email)

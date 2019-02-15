@@ -94,3 +94,4 @@ ENV/
 # Pokemon dev
 webapp/scripty.py
 TODO.md
+.pylintrc
