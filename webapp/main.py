@@ -16,7 +16,7 @@ import pymysql
 from flask import Flask, render_template
 
 # # Local application imports
-# sys.path.append(os.path.abspath("./scripts"))
+# sys.path.append(os.path.abspath("./app"))
 # import settings
 # import analysis
 

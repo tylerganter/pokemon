@@ -64,7 +64,7 @@ import pandas as pd
 # import matplotlib.pyplot as plt
 
 # Local application imports
-import settings
+import app.settings
 
 
 def get_pokemon(pokedex, name, subname=''):

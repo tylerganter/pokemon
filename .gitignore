@@ -91,5 +91,6 @@ ENV/
 # Pycharm stuff
 .idea
 
-# Pokemon stuff
-webapp/data/results
+# Pokemon dev
+webapp/scripty.py
+TODO.md
