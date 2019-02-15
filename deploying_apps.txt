@@ -7,6 +7,23 @@ app.yaml            # specify deployment configuration
 requirements.txt    # python package requirements
 
 ##################################
+# Configuring a Cloud Sql Database
+##################################
+
+# start a proxy connection to the GCP database
+./cloud_sql_proxy -instances=best-pokemon:us-east4:best-pokemon-mysql-db=tcp:3306
+
+# test your connection to the server
+mysql -u pokemon_db_user -p --host 127.0.0.1 --port 3306
+GottaCatch'EmAll!
+
+# Debugging
+sudo lsof -i:3306
+lsof -nP +c 15 | grep LISTEN
+netstat -an | grep 3306
+System Preferences > MySQL > Stop MySQL Server
+
+##################################
 # Test the App before deploying
 ##################################
 

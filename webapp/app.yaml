@@ -10,3 +10,9 @@ runtime: python37
 #libraries:
 #  - name: ssl
 #    version: latest
+
+env_variables:
+  CLOUD_SQL_USERNAME: pokemon_db_user
+  CLOUD_SQL_PASSWORD: GottaCatch'EmAll!
+  CLOUD_SQL_DATABASE_NAME: pokemon_database
+  CLOUD_SQL_CONNECTION_NAME: best-pokemon:us-east4:best-pokemon-mysql-db
