@@ -40,6 +40,7 @@ def modifier_function(damage, move, attacking_pokemon, defending_pokemon):
 
     return damage
 
+
 def score_function(mc_vector):
     """
 
@@ -59,6 +60,7 @@ def score_function(mc_vector):
         raise AttributeError
 
     return score
+
 
 def compute_defense_scores(damage_matrix):
     """"""
@@ -90,6 +92,7 @@ def compute_defense_scores(damage_matrix):
 
     return defense_vector
 
+
 def add_defense_scores(moves_and_scores, damage_matrix):
     defense_scores = compute_defense_scores(damage_matrix)
 
@@ -98,6 +101,7 @@ def add_defense_scores(moves_and_scores, damage_matrix):
                                             dtype='int32')
 
     return moves_and_scores
+
 
 def _single_pokemon_pokemon(attacking_pokemon_row, store_data):
     """"""
@@ -189,6 +193,7 @@ def _single_pokemon_pokemon(attacking_pokemon_row, store_data):
     best_damage_vector = np.round(best_damage_vector).astype('int32')
 
     return best_moves_and_scores, best_damage_vector
+
 
 def pokemon_pokemon(overwrite=False, start_idx=0, end_idx=np.inf):
     """

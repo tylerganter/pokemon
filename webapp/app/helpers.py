@@ -15,6 +15,7 @@ class SingleTon(object):
             SingleTon.__instance = object.__new__(cls)
         return SingleTon.__instance
 
+
 class SortedMoves(SingleTon):
     @property
     def sorted_moves(self):
@@ -57,6 +58,7 @@ class SortedMoves(SingleTon):
 
         return sorted_moves
 
+
 def from_poketype_chart(poketype_chart, attack_poketype, defending_pokemon):
     attack_row_index = list(poketype_chart.columns).index(attack_poketype)
 
@@ -70,6 +72,7 @@ def from_poketype_chart(poketype_chart, attack_poketype, defending_pokemon):
                                 for dpt in defending_poketypes])
 
     return effectiveness
+
 
 def effective_damage(attack, poketype_chart,
                      attacking_pokemon=None, defending_pokemon=None):

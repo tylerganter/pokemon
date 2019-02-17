@@ -64,6 +64,7 @@ def get_poketypes():
     return (pd.DataFrame(poketypes, columns=['poketype']),
             'poketypes')
 
+
 def get_move_categories():
     """
 
@@ -79,6 +80,7 @@ def get_move_categories():
 
     return (pd.DataFrame(move_categories, columns=['category']),
             'move_categories')
+
 
 def get_poketype_chart():
     """
@@ -171,15 +173,15 @@ if __name__ == '__main__':
     # GENS = range(1, 7+1)
     GENS = [1]
 
-    functions = [get_poketypes, get_move_categories, get_poketype_chart]
-    # functions = []
+    FUNCTIONS = [get_poketypes, get_move_categories, get_poketype_chart]
+    # FUNCTIONS = []
 
     # for GEN in range(1, 8):
     for GEN in GENS:
         settings.init(GEN=GEN)
 
         with pd.HDFStore(settings.store_filepath, mode='a') as store:
-            for func in functions:
+            for func in FUNCTIONS:
                 df, df_name = func()
 
                 store[df_name] = df

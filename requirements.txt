@@ -1,6 +1,7 @@
 # Project Requirements (not used in web app)
 requests
 beautifulsoup4
+tables
 # Pokemon Web App (or both)
 Flask
 Numpy
