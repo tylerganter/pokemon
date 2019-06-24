@@ -40,3 +40,32 @@ mysqlpoke() { mysql -u $CLOUD_SQL_USERNAME -p$CLOUD_SQL_PASSWORD $CLOUD_SQL_DATA
 ```
 
 and run `source ~/.bash_profile`. You can now call `mysqlpoke` from the command line to be logged into mysql as the newly created user.
+
+# Virtual Environment
+
+Now install [virtualenv](https://virtualenv.pypa.io) for python, and add this to your `~/.bash_profile` file:
+
+```
+export ENV_DIR="/<PATH>/<TO>/<YOUR>/<ENVIRONMENTS>"
+poke() { source "${ENV_DIR}/poke/bin/activate"; }
+exit() {
+    case `command -v python` in
+        ${ENV_DIR}/*) deactivate;;
+        *) builtin exit;;
+    esac
+}
+```
+
+`/<PATH>/<TO>/<YOUR>/<ENVIRONMENTS>` can be any arbitrary directory, such as `/Users/<username>/envs/`.
+
+Now we can create the virtual environment:
+```
+virtualenv $ENV_DIR/pokemon
+```
+
+We can activate it at any point by `poke`, deactivate it with `exit`, and if we ever need to reset the environment, just make it fresh:
+
+```
+rm -rf $ENV_DIR/pokemon
+virtualenv $ENV_DIR/pokemon
+```
