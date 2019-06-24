@@ -5,11 +5,10 @@ It is an end-to-end process starting with data acquisition from various
 websites and ending with a final web application GUI for requesting and
 visualizing results.
 
+These instructions are for macOS. It shouldn't be much of a stretch to make it
+work on linux. If you're on windows...well, I'm sorry in so many ways.
 
 ## Local MySQL Configuration:
-
-These instructions are for macOS. It shouldn't be much of a stretch to make it
-work on linux. If you're on windows...well, I pity you.
 
 I installed mysql using [homebrew](https://brew.sh/).
 
@@ -17,6 +16,16 @@ I installed mysql using [homebrew](https://brew.sh/).
 brew services start mysql
 brew services stop mysql
 ```
+
+Quick Tip:
+I found some smattering of these commands and tools to be useful for checking if my MySQL server is up and active:
+```
+sudo lsof -i:3306
+lsof -nP +c 15 | grep LISTEN
+netstat -an | grep 3306
+System Preferences > MySQL
+```
+(The default port for MySQL is 3306.)
 
 Well, start it up, and then lets make our database and database user:
 
@@ -69,3 +78,14 @@ We can activate it at any point by `poke`, deactivate it with `exit`, and if we 
 rm -rf $ENV_DIR/pokemon
 virtualenv $ENV_DIR/pokemon
 ```
+
+## Running the Local Development
+
+We should be ready to go! Activate your virtual environment and start the application:
+```
+poke
+python <PATH>/<TO>/<REPO>/pokemon/webapp/main.py
+```
+and visit the site at `localhost:5000`
+
+
