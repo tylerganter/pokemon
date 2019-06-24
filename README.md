@@ -14,6 +14,13 @@ work on linux. If you're on windows...well, I pity you.
 I installed mysql using [homebrew](https://brew.sh/).
 
 ```
+brew services start mysql
+brew services stop mysql
+```
+
+Well, start it up, and then lets make our database and database user:
+
+```
 mysql -u root -p
 ```
 
@@ -23,8 +30,7 @@ create user '<USERNAME>'@'localhost' identified by '<PASSWORD>';
 grant all privileges on <DATABASE>.* to '<USERNAME>'@'localhost';
 exit
 ```
-
-mysql -u $CLOUD_SQL_USERNAME -p$CLOUD_SQL_PASSWORD $CLOUD_SQL_DATABASE_NAME
+Put the following at the bottom of your `~/.bash_profile` file:
 
 ```
 export CLOUD_SQL_USERNAME="<USERNAME>"
@@ -32,3 +38,5 @@ export CLOUD_SQL_PASSWORD="<PASSWORD>"
 export CLOUD_SQL_DATABASE_NAME="<DATABASE>"
 mysqlpoke() { mysql -u $CLOUD_SQL_USERNAME -p$CLOUD_SQL_PASSWORD $CLOUD_SQL_DATABASE_NAME; }
 ```
+
+and run `source ~/.bash_profile`. You can now call `mysqlpoke` from the command line to be logged into mysql as the newly created user.
