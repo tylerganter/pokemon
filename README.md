@@ -6,7 +6,7 @@ websites and ending with a final web application GUI for requesting and
 visualizing results.
 
 
-# Local MySQL Configuration:
+## Local MySQL Configuration:
 
 These instructions are for macOS. It shouldn't be much of a stretch to make it
 work on linux. If you're on windows...well, I pity you.
@@ -41,7 +41,7 @@ mysqlpoke() { mysql -u $CLOUD_SQL_USERNAME -p$CLOUD_SQL_PASSWORD $CLOUD_SQL_DATA
 
 and run `source ~/.bash_profile`. You can now call `mysqlpoke` from the command line to be logged into mysql as the newly created user.
 
-# Virtual Environment
+## Virtual Environment
 
 Now install [virtualenv](https://virtualenv.pypa.io) for python, and add this to your `~/.bash_profile` file:
 
