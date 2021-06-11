@@ -93,3 +93,4 @@ ENV/
 
 # Pokemon stuff
 webapp/data/results
+out/

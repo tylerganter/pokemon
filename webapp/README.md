@@ -1,0 +1,48 @@
+# App Deployment with GCP
+
+## Bare minimum files
+
+- `main.py` - runs the flask app
+- `app.yaml` - specify deployment configuration
+- `requirements.txt` - python package requirements
+
+## Test the App before deploying
+
+```bash
+# create a virtual environment
+virtualenv --python python3 ~/envs/pokemon
+
+# activate it
+source ~/envs/pokemon/bin/activate
+
+# use pip to install dependencies
+pip install -r requirements.txt
+
+# run the app in the virtualenv
+python main.py
+```
+
+## Deploying to Google App Engine
+
+```bash
+# create the app (skip this??)
+gcloud app create
+
+# deploy the app
+gcloud app deploy app.yaml --project best-pokemon
+
+# load the webapp!
+gcloud app browse --project=best-pokemon
+```
+
+## Gcloud notes
+
+```
+gcloud info
+```
+
+### console.cloud.google.com/...
+
+App Engine > Dashboard
+
+App Engine > Settings > Disable App
