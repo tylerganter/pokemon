@@ -14,6 +14,7 @@ import os
 import numpy as np
 import pandas as pd
 
+from pokemon.charts import POKETYPES_FILENAME, MOVE_CATEGORIES_FILENAME, POKETYPE_CHART_FILENAME
 from pokemon.web.utils import url_to_soup
 
 
@@ -138,13 +139,13 @@ def main(out: str, gens: list):
         os.makedirs(out_dir, exist_ok=True)
 
         get_poketypes(gen=gen).to_csv(
-            os.path.join(out_dir, "poketypes.csv"), index=False
+            os.path.join(out_dir, POKETYPES_FILENAME), index=False
         )
         get_move_categories().to_csv(
-            os.path.join(out_dir, "move_categories.csv"), index=False
+            os.path.join(out_dir, MOVE_CATEGORIES_FILENAME), index=False
         )
         get_poketype_chart(gen=gen).to_csv(
-            os.path.join(out_dir, "poketype_chart.csv"), index=False
+            os.path.join(out_dir, POKETYPE_CHART_FILENAME), index=False
         )
 
 
