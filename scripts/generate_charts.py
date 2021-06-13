@@ -17,7 +17,6 @@ from pokemon.pokemondb import PokemonDB
 REPO_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 
 
-
 def main(out: str, gens: list):
     for gen in gens:
         pokedb = PokemonDB(gen=gen, out_base_dir=out)
