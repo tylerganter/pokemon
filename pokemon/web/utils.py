@@ -1,8 +1,6 @@
 from bs4 import BeautifulSoup
 import requests
 
-__all__ = ["url_to_soup", "file_to_soup"]
-
 
 def url_to_soup(url, parser="lxml"):
     # pull the webpage
